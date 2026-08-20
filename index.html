@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <title>InvestScan PRO v8</title>
+    <title>InvestScan PRO v9</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .glass-card {
@@ -24,7 +24,7 @@
             <h1 class="text-[11px] uppercase tracking-widest text-emerald-400 font-black">InvestScan PRO MAX</h1>
             <p class="text-base font-semibold text-zinc-200">Deep Screener & News Hub</p>
         </div>
-        <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold">v8.0 Active</span>
+        <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold">v9.0 Extended</span>
     </header>
 
     <main class="max-w-xl mx-auto p-4 space-y-6">
@@ -64,7 +64,7 @@
         <!-- Loading State -->
         <div id="loading-state" class="hidden text-center py-10 space-y-3">
             <div class="inline-block w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-xs text-zinc-400 animate-pulse">Analyseret markedssignaler, nyheds-stream og sektortrends...</p>
+            <p class="text-xs text-zinc-400 animate-pulse">Henter markedssignaler, nyheds-stream og sektortrends...</p>
         </div>
 
         <!-- Resultater -->
@@ -173,7 +173,23 @@
                 <!-- Nyhedsliste -->
                 <div class="space-y-2 pt-2">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 block">Seneste Analyser & Overskrifter</span>
+                    
+                    <!-- Standard Nyheder -->
                     <div id="news-list" class="space-y-2"></div>
+
+                    <!-- Ekstra Nyheder (Foldes ud via Dropdown) -->
+                    <div id="more-news-container" class="hidden space-y-2 pt-1 transition-all"></div>
+
+                    <!-- Dropdown Knap i Bunden -->
+                    <button 
+                        type="button" 
+                        id="toggle-news-btn" 
+                        onclick="toggleMoreNews()" 
+                        class="w-full mt-3 py-3 px-4 glass-card rounded-xl text-xs font-bold text-emerald-400 hover:text-emerald-300 hover:bg-zinc-800/80 active:scale-[0.99] transition flex items-center justify-center gap-2 border border-zinc-700/60"
+                    >
+                        <span>Læs flere nyheder & finanslinks</span>
+                        <span id="news-arrow" class="text-xs transition-transform duration-300">▼</span>
+                    </button>
                 </div>
             </section>
 
@@ -181,20 +197,54 @@
     </main>
 
     <script>
-        // Database over populære globale og danske aktier
         const MASTER_DATABASE = [
-            { symbol: 'NOVO-B.CO', name: 'Novo Nordisk B A/S', exch: 'XCSE', type: 'Aktie', sector: 'Sundhed', risk: 'Lav-Medium', price: 854.20, cur: 'DKK', rsi: 42, sentiment: '86% Positivt', sentimentText: 'Høj efterspørgsel på GLP-1 medicin samt positiv ekspansion i Asien.', drivers: 'Wegovy/Ozempic salg og kapacitetsudvidelse.', risks: 'Prisforhandlinger i USA.', news: [{ title: 'Novo Nordisk udvider produktionen globalt', source: 'Børsen', time: '1 time siden', type: 'pos' }, { title: 'Analytikere fastholder stærkt købsanbefaling', source: 'MarketWire', time: '3 timer siden', type: 'pos' }] },
-            { symbol: 'MAERSK-B.CO', name: 'A.P. Møller - Mærsk B', exch: 'XCSE', type: 'Aktie', sector: 'Logistik', risk: 'Medium', price: 10450.00, cur: 'DKK', rsi: 58, sentiment: '64% Neutral', sentimentText: 'Fragtraterne viser stabilisering på de globale ruter.', drivers: 'Ruteomlægninger og flådeoptimering.', risks: 'Geopolitiske spændinger.', news: [{ title: 'Mærsk tilpasser sine globale sejlruter', source: 'ShippingWatch', time: '2 timer siden', type: 'neu' }] },
-            { symbol: 'DSV.CO', name: 'DSV A/S', exch: 'XCSE', type: 'Aktie', sector: 'Transport', risk: 'Lav-Medium', price: 1180.00, cur: 'DKK', rsi: 65, sentiment: '78% Positivt', sentimentText: 'Stærke integrationer og fortsatte opkøb i sektoren.', drivers: 'Markedsandele og effektivitetsforbedringer.', risks: 'Afdæmpet global handel.', news: [{ title: 'DSV leverer solide tal for seneste kvartal', source: 'Børsen', time: '4 timer siden', type: 'pos' }] },
-            { symbol: 'CARL-B.CO', name: 'Carlsberg B A/S', exch: 'XCSE', type: 'Aktie', sector: 'Forbrug', risk: 'Lav', price: 820.00, cur: 'DKK', rsi: 38, sentiment: '70% Positivt', sentimentText: 'Vækst på asiatiske markeder samt premium-portefølje.', drivers: 'Asiatisk volumen-vækst.', risks: 'Stigende råvarepriser.', news: [{ title: 'Carlsberg øger sit fokus på premium-segmentet', source: 'Ritzau', time: '5 timer siden', type: 'pos' }] },
-            { symbol: 'ORSTED.CO', name: 'Ørsted A/S', exch: 'XCSE', type: 'Aktie', sector: 'Grøn Energi', risk: 'Høj', price: 395.00, cur: 'DKK', rsi: 31, sentiment: '45% Forsigtigt', sentimentText: 'Stabile drifttal, men udfordret af amerikanske havvind-projekter.', drivers: 'Langsigtede PPA-aftaler og grøn omstilling.', risks: 'Højt renteniveau og forsinkelser.', news: [{ title: 'Ørsted fokuserer på kerneaktiver i Europa', source: 'EnergiWatch', time: '1 dag siden', type: 'neu' }] },
-            { symbol: 'VWS.CO', name: 'Vestas Wind Systems', exch: 'XCSE', type: 'Aktie', sector: 'Industri', risk: 'Medium-Høj', price: 152.40, cur: 'DKK', rsi: 44, sentiment: '60% Neutral', sentimentText: 'Stor ordreindgang kompenseres af omkostningspres.', drivers: 'Rekordhøj ordrebeholdning.', risks: 'Forsyningskædeudfordringer.', news: [{ title: 'Vestas sikrer ny stor vindordre i Nordamerika', source: 'Ritzau', time: '2 timer siden', type: 'pos' }] },
-            { symbol: 'AAPL', name: 'Apple Inc.', exch: 'NASDAQ', type: 'Aktie', sector: 'Teknologi', risk: 'Lav', price: 224.50, cur: 'USD', rsi: 54, sentiment: '68% Positivt', sentimentText: 'Integration af Apple Intelligence i nyt iOS skaber optimisme.', drivers: 'Services-omsætning og nye AI-funktioner.', risks: 'EU-regulering og salg i Kina.', news: [{ title: 'Apple udruller nye AI-funktioner globalt', source: 'Bloomberg', time: '2 timer siden', type: 'pos' }] },
-            { symbol: 'TSLA', name: 'Tesla, Inc.', exch: 'NASDAQ', type: 'Aktie', sector: 'Bil & Energi', risk: 'Høj', price: 210.10, cur: 'USD', rsi: 33, sentiment: '42% Forsigtigt', sentimentText: 'Marginpres modvejes af forventninger til autonom kørsel.', drivers: 'Full Self-Driving (FSD) og Megapack batterier.', risks: 'Konkurrence fra Kina.', news: [{ title: 'Teslas energidivision sætter ny vækstrekord', source: 'Electrek', time: '3 timer siden', type: 'pos' }] },
-            { symbol: 'MSFT', name: 'Microsoft Corporation', exch: 'NASDAQ', type: 'Aktie', sector: 'Teknologi', risk: 'Lav', price: 415.20, cur: 'USD', rsi: 51, sentiment: '82% Positivt', sentimentText: 'Azure Cloud og Copilot AI fortsætter med at drive væksten.', drivers: 'Sky-tjenester og enterprise AI.', risks: 'Skærpet konkurrence fra Google.', news: [{ title: 'Microsoft Azure øger sine markedsandele', source: 'CNBC', time: '1 time siden', type: 'pos' }] },
-            { symbol: 'NVDA', name: 'NVIDIA Corporation', exch: 'NASDAQ', type: 'Aktie', sector: 'Semiconductors', risk: 'Høj', price: 128.00, cur: 'USD', rsi: 69, sentiment: '90% Meget Positivt', sentimentText: 'Høj efterspørgsel efter datacenter-chipper (Blackwell).', drivers: 'Global AI-infrastruktur udbygning.', risks: 'Eksportrestriktioner.', news: [{ title: 'NVIDIA oplever fortsat massiv efterspørgsel', source: 'Reuters', time: '30 min siden', type: 'pos' }] },
-            { symbol: 'BTC-USD', name: 'Bitcoin USD', exch: 'Crypto', type: 'Krypto', sector: 'Digitalt Aktiv', risk: 'Høj', price: 61200.00, cur: 'USD', rsi: 59, sentiment: '75% Positivt', sentimentText: 'Instutionel tilstrømning via spot ETF’er.', drivers: 'Halving-cyklus og kapitaltilstrømning.', risks: 'Regulatorisk usikkerhed.', news: [{ title: 'Bitcoin ETF’er registrerer nye ugentlige rekorder', source: 'CoinDesk', time: '2 timer siden', type: 'pos' }] }
+            { 
+                symbol: 'NOVO-B.CO', name: 'Novo Nordisk B A/S', exch: 'XCSE', type: 'Aktie', sector: 'Sundhed', risk: 'Lav-Medium', price: 854.20, cur: 'DKK', rsi: 42, sentiment: '86% Positivt', sentimentText: 'Høj efterspørgsel på GLP-1 medicin samt positiv ekspansion i Asien.', drivers: 'Wegovy/Ozempic salg og kapacitetsudvidelse.', risks: 'Prisforhandlinger i USA.', 
+                news: [
+                    { title: 'Novo Nordisk udvider produktionen globalt', source: 'Børsen', time: '1 time siden', type: 'pos', url: 'https://borsen.dk' },
+                    { title: 'Analytikere fastholder stærkt købsanbefaling', source: 'MarketWire', time: '3 timer siden', type: 'pos', url: 'https://marketwire.dk' }
+                ],
+                extraNews: [
+                    { title: 'Nye kliniske testresultater viser udvidede effekter af Wegovy', source: 'Reuters', time: '5 timer siden', type: 'pos', url: 'https://www.reuters.com' },
+                    { title: 'USA drøfter nye prismodeller for receptpligtig medicin', source: 'Bloomberg', time: '1 dag siden', type: 'neg', url: 'https://www.bloomberg.com' },
+                    { title: 'Kapitalfonde øger deres eksponering mod den nordiske sundhedssektor', source: 'Financial Times', time: '2 dage siden', type: 'pos', url: 'https://www.ft.com' }
+                ]
+            },
+            { 
+                symbol: 'AAPL', name: 'Apple Inc.', exch: 'NASDAQ', type: 'Aktie', sector: 'Teknologi', risk: 'Lav', price: 224.50, cur: 'USD', rsi: 54, sentiment: '68% Positivt', sentimentText: 'Integration af Apple Intelligence i nyt iOS skaber optimisme.', drivers: 'Services-omsætning og nye AI-funktioner.', risks: 'EU-regulering og salg i Kina.', 
+                news: [
+                    { title: 'Apple udruller nye AI-funktioner globalt', source: 'Bloomberg', time: '2 timer siden', type: 'pos', url: 'https://www.bloomberg.com' }
+                ],
+                extraNews: [
+                    { title: 'Tjenestedivisionen sætter ny omsætningsrekord i seneste kvartal', source: 'CNBC', time: '4 timer siden', type: 'pos', url: 'https://www.cnbc.com' },
+                    { title: 'EU undersøger vilkår for App Store udviklere', source: 'Wall Street Journal', time: '1 dag siden', type: 'neg', url: 'https://www.wsj.com' },
+                    { title: 'Apple Intelligence booster opgraderingscyklus for iPhone', source: 'Yahoo Finance', time: '2 dage siden', type: 'pos', url: 'https://finance.yahoo.com' }
+                ]
+            },
+            { 
+                symbol: 'TSLA', name: 'Tesla, Inc.', exch: 'NASDAQ', type: 'Aktie', sector: 'Bil & Energi', risk: 'Høj', price: 210.10, cur: 'USD', rsi: 33, sentiment: '42% Forsigtigt', sentimentText: 'Marginpres modvejes af forventninger til autonom kørsel.', drivers: 'Full Self-Driving (FSD) og Megapack batterier.', risks: 'Konkurrence fra Kina.', 
+                news: [
+                    { title: 'Teslas energidivision sætter ny vækstrekord', source: 'Electrek', time: '3 timer siden', type: 'pos', url: 'https://electrek.co' }
+                ],
+                extraNews: [
+                    { title: 'Konkurrencen skærpes fra kinesiske elbilsproducenter', source: 'Financial Times', time: '6 timer siden', type: 'neg', url: 'https://www.ft.com' },
+                    { title: 'Robotaxi-flåde afventer regulatoriske godkendelser', source: 'TechCrunch', time: '1 dag siden', type: 'neu', url: 'https://techcrunch.com' },
+                    { title: 'Analytikere opdaterer kursmål på Tesla aktien', source: 'MarketWatch', time: '2 dage siden', type: 'neu', url: 'https://www.marketwatch.com' }
+                ]
+            },
+            { 
+                symbol: 'BTC-USD', name: 'Bitcoin USD', exch: 'Crypto', type: 'Krypto', sector: 'Digitalt Aktiv', risk: 'Høj', price: 61200.00, cur: 'USD', rsi: 59, sentiment: '75% Positivt', sentimentText: 'Instutionel tilstrømning via spot ETF’er.', drivers: 'Halving-cyklus og kapitaltilstrømning.', risks: 'Regulatorisk usikkerhed.', 
+                news: [
+                    { title: 'Bitcoin ETF’er registrerer nye ugentlige rekorder', source: 'CoinDesk', time: '2 timer siden', type: 'pos', url: 'https://www.coindesk.com' }
+                ],
+                extraNews: [
+                    { title: 'Institutionsinvestorer øger kryptoporteføljen', source: 'CoinTelegraph', time: '5 timer siden', type: 'pos', url: 'https://cointelegraph.com' },
+                    { title: 'Makroøkonomiske faktorer og rentemiljø påvirker kryptomarkedet', source: 'Bloomberg Crypto', time: '1 dag siden', type: 'neu', url: 'https://www.bloomberg.com' }
+                ]
+            }
         ];
+
+        let currentActiveAsset = null;
 
         function onSearchInput(query) {
             const dropdown = document.getElementById('autocomplete-results');
@@ -211,13 +261,11 @@
                 return;
             }
 
-            // Søg i master-databasen
             let matches = MASTER_DATABASE.filter(a => 
                 a.name.toLowerCase().includes(query) || 
                 a.symbol.toLowerCase().includes(query)
             );
 
-            // Dynamisk fallback for alle andre søgeord
             if (matches.length === 0 && query.length >= 1) {
                 const cleanQuery = query.toUpperCase();
                 matches.push({
@@ -234,7 +282,11 @@
                     sentimentText: 'Stabil markedssøgning på globalt indeks.',
                     drivers: 'Generel sektorudvikling.',
                     risks: 'Markedsvolatilitet.',
-                    news: [{ title: `Analyse og markedsdata for ${cleanQuery}`, source: 'GlobalWire', time: '1 time siden', type: 'neu' }]
+                    news: [{ title: `Analyse og markedsdata for ${cleanQuery}`, source: 'GlobalWire', time: '1 time siden', type: 'neu', url: 'https://finance.yahoo.com' }],
+                    extraNews: [
+                        { title: `Sektorens handelsvolumen på ${cleanQuery}`, source: 'MarketWatch', time: '3 timer siden', type: 'neu', url: 'https://www.marketwatch.com' },
+                        { title: `Global markedsrapport og fremtidsprognose`, source: 'Reuters', time: '1 dag siden', type: 'pos', url: 'https://www.reuters.com' }
+                    ]
                 });
             }
 
@@ -281,6 +333,7 @@
         }
 
         function selectAsset(asset) {
+            currentActiveAsset = asset;
             const dropdown = document.getElementById('autocomplete-results');
             dropdown.classList.add('hidden');
             dropdown.innerHTML = '';
@@ -288,6 +341,14 @@
             document.getElementById('asset-input').value = `${asset.name} (${asset.symbol})`;
             document.getElementById('clear-btn').classList.remove('hidden');
             
+            // Nulstil ekstra nyheder dropdown
+            const moreContainer = document.getElementById('more-news-container');
+            const btn = document.getElementById('toggle-news-btn');
+            const arrow = document.getElementById('news-arrow');
+            moreContainer.classList.add('hidden');
+            btn.querySelector('span').innerText = 'Læs flere nyheder & finanslinks';
+            arrow.style.transform = 'rotate(0deg)';
+
             const loading = document.getElementById('loading-state');
             const results = document.getElementById('results-container');
 
@@ -374,29 +435,63 @@
             document.getElementById('val-drivers').innerText = asset.drivers || 'Stabil omsætningsvækst.';
             document.getElementById('val-risks').innerText = asset.risks || 'Generel markedsvolatilitet.';
 
+            // Render Standard Nyheder
             const newsList = document.getElementById('news-list');
             newsList.innerHTML = '';
 
-            const newsItems = asset.news || [
-                { title: `Offentliggørelse af nye tal for ${asset.name}`, source: 'MarketWire', time: '1 time siden', type: 'pos' }
-            ];
-
+            const newsItems = asset.news || [];
             newsItems.forEach(n => {
-                const card = document.createElement('div');
-                card.className = 'glass-card p-3 rounded-xl flex justify-between items-start gap-3';
-                const dotColor = n.type === 'pos' ? 'bg-emerald-400' : (n.type === 'neg' ? 'bg-rose-400' : 'bg-amber-400');
-
-                card.innerHTML = `
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full ${dotColor} shrink-0"></span>
-                            <h4 class="text-xs font-semibold text-zinc-200 leading-snug">${n.title}</h4>
-                        </div>
-                        <p class="text-[10px] text-zinc-500 pl-4">${n.source} • ${n.time}</p>
-                    </div>
-                `;
-                newsList.appendChild(card);
+                newsList.appendChild(createNewsCard(n));
             });
+
+            // Render Ekstra Nyheder (til Dropdown)
+            const moreNewsContainer = document.getElementById('more-news-container');
+            moreNewsContainer.innerHTML = '';
+            
+            const extraItems = asset.extraNews || [];
+            extraItems.forEach(n => {
+                moreNewsContainer.appendChild(createNewsCard(n));
+            });
+        }
+
+        function createNewsCard(n) {
+            const card = document.createElement('a');
+            card.href = n.url || 'https://finance.yahoo.com';
+            card.target = "_blank";
+            card.className = 'glass-card p-3 rounded-xl flex justify-between items-start gap-3 hover:border-emerald-500/50 transition block';
+            
+            const dotColor = n.type === 'pos' ? 'bg-emerald-400' : (n.type === 'neg' ? 'bg-rose-400' : 'bg-amber-400');
+
+            card.innerHTML = `
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full ${dotColor} shrink-0"></span>
+                        <h4 class="text-xs font-semibold text-zinc-200 leading-snug">${n.title}</h4>
+                    </div>
+                    <p class="text-[10px] text-zinc-500 pl-4 flex items-center gap-1">
+                        <span>${n.source} • ${n.time}</span>
+                        <span class="text-emerald-400 underline ml-1">Læs kilde ↗</span>
+                    </p>
+                </div>
+            `;
+            return card;
+        }
+
+        // Dropdown Toggle Funktion for Nyheder
+        function toggleMoreNews() {
+            const moreContainer = document.getElementById('more-news-container');
+            const btn = document.getElementById('toggle-news-btn');
+            const arrow = document.getElementById('news-arrow');
+
+            if (moreContainer.classList.contains('hidden')) {
+                moreContainer.classList.remove('hidden');
+                btn.querySelector('span').innerText = 'Skjul ekstra nyheder';
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                moreContainer.classList.add('hidden');
+                btn.querySelector('span').innerText = 'Læs flere nyheder & finanslinks';
+                arrow.style.transform = 'rotate(0deg)';
+            }
         }
 
         document.addEventListener('click', function(e) {
