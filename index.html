@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="da" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvestScan - Live Market Screener</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass-card {
+            background: rgba(24, 24, 27, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(63, 63, 70, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans pb-10">
+
+    <header class="p-6 pb-4 border-b border-zinc-800/80 flex justify-between items-center max-w-xl mx-auto">
+        <div>
+            <h1 class="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">InvestScan</h1>
+            <p class="text-base font-semibold text-zinc-200">Free Live Screener</p>
+        </div>
+        <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full">Yahoo Data</span>
+    </header>
+
+    <main class="max-w-xl mx-auto p-4 space-y-6">
+
+        <section class="glass-card p-5 rounded-2xl space-y-4">
+            <h2 class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Analyser Aktiv Live</h2>
+            <form onsubmit="runLiveScreening(event)" class="space-y-3">
+                <div class="grid grid-cols-3 gap-2">
+                    <select id="asset-type" class="col-span-1 bg-zinc-900 border border-zinc-700/80 text-zinc-200 text-xs rounded-xl p-3 focus:outline-none focus:border-emerald-500">
+                        <option value="US">US Aktie / ETF</option>
+                        <option value="DK">DK Aktie (.CO)</option>
+                        <option value="CRYPTO">Krypto (-USD)</option>
+                    </select>
+                    <input type="text" id="asset-symbol" placeholder="e.g. AAPL, NOVO-B, BTC" required class="col-span-2 bg-zinc-900 border border-zinc-700/80 text-zinc-100 text-xs rounded-xl p-3 focus:outline-none focus:border-emerald-500 uppercase">
+                </div>
+                
+                <button type="submit" id="btn-search" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-zinc-950 font-bold py-3 rounded-xl transition flex justify-center items-center gap-2 text-sm">
+                    ⚡ Live Scan Aktiv
+                </button>
+            </form>
+        </section>
+
+        <div id="loading-state" class="hidden text-center py-8 space-y-3">
+            <div class="inline-block w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-xs text-zinc-400 animate-pulse">Henter live priser, beregner RSI & scrapper nyheder fra Yahoo...</p>
+        </div>
+
+        <div id="error-state" class="hidden p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs text-center">
+            Kunne ikke hente data for det valgte symbol. Tjek om tickeren er korrekt (f.eks. AAPL eller NOVO-B).
+        </div>
+
+        <div id="results-container" class="space-y-6 hidden">
+
+            <section class="glass-card rounded-2xl p-6 space-y-5 shadow-2xl relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span id="res-symbol" class="text-xs font-bold uppercase tracking-widest text-zinc-500">---</span>
+                        <h3 id="res-name" class="text-2xl font-extrabold text-zinc-100">---</h3>
+                        <p id="res-price" class="text-sm font-semibold text-zinc-400 mt-0.5">---</p>
+                    </div>
+                    <div id="res-badge" class="px-4 py-2 rounded-xl border font-black text-sm tracking-wide uppercase">
+                        ---
+                    </div>
+                </div>
+
+                <div class="space-y-3 pt-3 border-t border-zinc-800/80">
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-zinc-400">RSI Indikator (14 Dage)</span>
+                            <span id="val-rsi-text" class="font-bold">---</span>
+                        </div>
+                        <div class="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
+                            <div id="bar-rsi" class="h-2 transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="grid grid-cols-3 gap-3 text-center">
+                <div class="glass-card p-3 rounded-xl">
+                    <span class="text-[10px] uppercase font-bold text-zinc-500 block">Dagshøj (High)</span>
+                    <span id="val-high" class="text-sm font-semibold text-zinc-200">---</span>
+                </div>
+                <div class="glass-card p-3 rounded-xl">
+                    <span class="text-[10px] uppercase font-bold text-zinc-500 block">Dagslav (Low)</span>
+                    <span id="val-low" class="text-sm font-semibold text-zinc-200">---</span>
+                </div>
+                <div class="glass-card p-3 rounded-xl">
+                    <span class="text-[10px] uppercase font-bold text-zinc-500 block">Volumen</span>
+                    <span id="val-vol" class="text-sm font-semibold text-zinc-200">---</span>
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Seneste Yahoo Finance Nyheder</h2>
+                <div id="news-list" class="space-y-2"></div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        async function runLiveScreening(e) {
+            e.preventDefault();
+            let symbol = document.getElementById('asset-symbol').value.toUpperCase().trim();
+            const type = document.getElementById('asset-type').value;
+
+            // Tilpas symboler til Yahoo format
+            if (type === 'DK' && !symbol.endsWith('.CO')) symbol += '.CO';
+            if (type === 'CRYPTO' && !symbol.endsWith('-USD')) symbol += '-USD';
+
+            const loading = document.getElementById('loading-state');
+            const results = document.getElementById('results-container');
+            const error = document.getElementById('error-state');
+
+            results.classList.add('hidden');
+            error.classList.add('hidden');
+            loading.classList.remove('hidden');
+
+            try {
+                // Hent kursdata (15 dages historik til RSI)
+                const proxy = "https://corsproxy.io/?";
+                const chartUrl = encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=1mo&interval=1d`);
+                
+                const response = await fetch(proxy + chartUrl);
+                const data = await response.json();
+
+                const result = data.chart.result[0];
+                if (!result) throw new Error("Ingen data");
+
+                // Hent nyheder via Yahoo Search API
+                const searchUrl = encodeURIComponent(`https://query2.finance.yahoo.com/1/finance/search?q=${symbol}&newsCount=4`);
+                const newsResponse = await fetch(proxy + searchUrl);
+                const newsData = await newsResponse.json();
+
+                // Behandl Data
+                parseAndRender(result, newsData.news || []);
+
+                loading.classList.add('hidden');
+                results.classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                loading.classList.add('hidden');
+                error.classList.remove('hidden');
+            }
+        }
+
+        function calculateRSI(prices) {
+            if (prices.length < 15) return 50; // Standard neutral hvis for lidt data
+            let gains = 0, losses = 0;
+
+            for (let i = prices.length - 14; i < prices.length; i++) {
+                let diff = prices[i] - prices[i - 1];
+                if (diff >= 0) gains += diff;
+                else losses -= diff;
+            }
+
+            let avgGain = gains / 14;
+            let avgLoss = losses / 14;
+
+            if (avgLoss === 0) return 100;
+            let rs = avgGain / avgLoss;
+            return Math.round(100 - (100 / (1 + rs)));
+        }
+
+        function parseAndRender(data, news) {
+            const meta = data.meta;
+            const quote = data.indicators.quote[0];
+            const closePrices = quote.close.filter(p => p !== null);
+
+            const currentPrice = meta.regularMarketPrice;
+            const prevClose = meta.chartPreviousClose || meta.previousClose;
+            const currency = meta.currency || 'USD';
+            const changePercent = (((currentPrice - prevClose) / prevClose) * 100).toFixed(2);
+
+            // RSI beregning
+            const rsi = calculateRSI(closePrices);
+
+            // Generer Køb/Sælg signal baseret på RSI + dagsudvikling
+            let signal = 'HOLD';
+            let color = 'amber';
+
+            if (rsi < 35 || changePercent < -3) {
+                signal = 'KØB (Oversolgt)';
+                color = 'emerald';
+            } else if (rsi > 70 || changePercent > 4) {
+                signal = 'SÆLG (Overkøbt)';
+                color = 'rose';
+            }
+
+            // Opdater UI
+            document.getElementById('res-symbol').innerText = meta.symbol;
+            document.getElementById('res-name').innerText = meta.shortName || meta.symbol;
+            
+            const isPos = changePercent >= 0;
+            document.getElementById('res-price').innerHTML = `
+                ${currentPrice.toLocaleString()} ${currency} 
+                <span class="${isPos ? 'text-emerald-400' : 'text-rose-400'} text-xs ml-1">
+                    ${isPos ? '+' : ''}${changePercent}%
+                </span>
+            `;
+
+            // Badge Setup
+            const badge = document.getElementById('res-badge');
+            badge.innerText = signal;
+            if (color === 'emerald') {
+                badge.className = "px-4 py-2 rounded-xl border bg-emerald-500/10 border-emerald-500/40 text-emerald-400 font-black text-sm tracking-wide uppercase";
+            } else if (color === 'amber') {
+                badge.className = "px-4 py-2 rounded-xl border bg-amber-500/10 border-amber-500/40 text-amber-400 font-black text-sm tracking-wide uppercase";
+            } else {
+                badge.className = "px-4 py-2 rounded-xl border bg-rose-500/10 border-rose-500/40 text-rose-400 font-black text-sm tracking-wide uppercase";
+            }
+
+            // RSI Meter
+            document.getElementById('val-rsi-text').innerText = `${rsi} / 100`;
+            const rsiBar = document.getElementById('bar-rsi');
+            rsiBar.style.width = `${rsi}%`;
+            rsiBar.className = `h-2 transition-all duration-500 ${rsi < 35 ? 'bg-emerald-400' : (rsi > 70 ? 'bg-rose-400' : 'bg-amber-400')}`;
+
+            // Metrics
+            document.getElementById('val-high').innerText = meta.regularMarketDayHigh?.toLocaleString() || '-';
+            document.getElementById('val-low').innerText = meta.regularMarketDayLow?.toLocaleString() || '-';
+            document.getElementById('val-vol').innerText = (meta.regularMarketVolume / 1000000).toFixed(1) + 'M';
+
+            // Nyheder Render
+            const newsList = document.getElementById('news-list');
+            newsList.innerHTML = '';
+
+            if (news.length === 0) {
+                newsList.innerHTML = '<p class="text-xs text-zinc-500">Ingen seneste nyheder fundet for dette aktiv.</p>';
+            } else {
+                news.forEach(item => {
+                    const card = document.createElement('a');
+                    card.href = item.link;
+                    card.target = "_blank";
+                    card.className = 'glass-card p-3 rounded-xl block hover:border-zinc-500 transition space-y-1';
+
+                    card.innerHTML = `
+                        <h4 class="text-xs font-semibold text-zinc-200 line-clamp-2">${item.title}</h4>
+                        <p class="text-[10px] text-zinc-500">${item.publisher} • Klik for at læse</p>
+                    `;
+                    newsList.appendChild(card);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
