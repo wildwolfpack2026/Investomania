@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <title>InvestScan PRO v9</title>
+    <title>InvestScan PRO v10 - Real Data</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .glass-card {
@@ -22,16 +22,16 @@
     <header class="p-6 pb-4 border-b border-zinc-800/80 flex justify-between items-center max-w-xl mx-auto">
         <div>
             <h1 class="text-[11px] uppercase tracking-widest text-emerald-400 font-black">InvestScan PRO MAX</h1>
-            <p class="text-base font-semibold text-zinc-200">Deep Screener & News Hub</p>
+            <p class="text-base font-semibold text-zinc-200">Live API Screener</p>
         </div>
-        <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold">v9.0 Extended</span>
+        <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold">Real-Time</span>
     </header>
 
     <main class="max-w-xl mx-auto p-4 space-y-6">
 
         <!-- Søgefelt med Slet-kryds -->
         <section class="glass-card p-5 rounded-2xl space-y-4 relative z-30">
-            <h2 class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Søg Aktiv (Aktier, ETF, Krypto)</h2>
+            <h2 class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Søg Reelt Aktiv (Ticker e.g. AAPL, NOVO-B.CO, TSLA)</h2>
             
             <div class="relative space-y-2">
                 <div class="relative flex items-center">
@@ -39,17 +39,16 @@
                         type="text" 
                         id="asset-input" 
                         autocomplete="off"
-                        placeholder="Skriv f.eks. Novo, Apple, Vestas, Bitcoin..." 
+                        placeholder="Skriv ticker eller navn (f.eks. AAPL, Novo, TSLA)..." 
                         oninput="onSearchInput(this.value)"
-                        class="w-full bg-zinc-900 border border-zinc-700/80 text-zinc-100 text-sm rounded-xl p-3 pr-10 focus:outline-none focus:border-emerald-500 transition"
+                        class="w-full bg-zinc-900 border border-zinc-700/80 text-zinc-100 text-sm rounded-xl p-3 pr-10 focus:outline-none focus:border-emerald-500 transition uppercase"
                     >
                     
-                    <!-- Slet alt kryds (✕) -->
                     <button 
                         type="button" 
                         id="clear-btn" 
                         onclick="clearSearch()" 
-                        class="hidden absolute right-3 w-6 h-6 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700 active:scale-95 text-xs font-bold transition"
+                        class="hidden absolute right-3 w-6 h-6 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700 text-xs font-bold transition"
                         title="Slet alt"
                     >
                         ✕
@@ -64,7 +63,12 @@
         <!-- Loading State -->
         <div id="loading-state" class="hidden text-center py-10 space-y-3">
             <div class="inline-block w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-xs text-zinc-400 animate-pulse">Henter markedssignaler, nyheds-stream og sektortrends...</p>
+            <p class="text-xs text-zinc-400 animate-pulse">Henter ægte live-kurs, P/E-tal, markedsværdi & nyheder...</p>
+        </div>
+
+        <!-- Fejlmeddelelse (vises hvis ticker ikke findes) -->
+        <div id="error-state" class="hidden p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs text-center font-semibold">
+            Kunne ikke finde et aktiv med det indtastede symbol. Tjek at tickeren er korrekt.
         </div>
 
         <!-- Resultater -->
@@ -86,7 +90,7 @@
                 <!-- 12 Måneders Kursmål -->
                 <div class="bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl flex justify-between items-center">
                     <div>
-                        <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Estimeret 12M Kursmål</span>
+                        <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Analytikernes 12M Kursmål</span>
                         <span id="val-target-price" class="text-lg font-black text-emerald-400">---</span>
                     </div>
                     <div class="text-right">
@@ -97,160 +101,66 @@
 
                 <!-- Skrevet Vurdering -->
                 <div class="space-y-1.5 pt-2">
-                    <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">AI Samlet Konklusion</span>
+                    <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Samlet AI Vurdering</span>
                     <p id="res-summary" class="text-xs text-zinc-300 leading-relaxed bg-zinc-900/40 p-3 rounded-xl border border-zinc-800/60">
                         ---
                     </p>
                 </div>
-
-                <!-- Indikatorer -->
-                <div class="space-y-3 pt-3 border-t border-zinc-800/80">
-                    <div class="space-y-1">
-                        <div class="flex justify-between text-xs">
-                            <span class="text-zinc-400">RSI Momentum (14 Dage)</span>
-                            <span id="val-rsi-text" class="font-bold">---</span>
-                        </div>
-                        <div class="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
-                            <div id="bar-rsi" class="h-2 transition-all duration-500" style="width: 0%"></div>
-                        </div>
-                    </div>
-
-                    <div class="space-y-1">
-                        <div class="flex justify-between text-xs">
-                            <span class="text-zinc-400">Teknisk Trend (SMA)</span>
-                            <span id="val-trend-text" class="font-bold">---</span>
-                        </div>
-                        <div class="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
-                            <div id="bar-trend" class="h-2 transition-all duration-500" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
             </section>
 
-            <!-- Key Metrics Grid -->
-            <section class="grid grid-cols-3 gap-3 text-center">
+            <!-- Flere Nøgletal Grid -->
+            <section class="grid grid-cols-2 gap-3 text-center">
                 <div class="glass-card p-3 rounded-xl">
-                    <span class="text-[10px] uppercase font-bold text-zinc-500 block">Sektor</span>
-                    <span id="val-sector" class="text-xs font-semibold text-emerald-400">---</span>
+                    <span class="text-[10px] uppercase font-bold text-zinc-500 block">P/E Værdi</span>
+                    <span id="val-pe" class="text-xs font-semibold text-zinc-200">---</span>
                 </div>
                 <div class="glass-card p-3 rounded-xl">
-                    <span class="text-[10px] uppercase font-bold text-zinc-500 block">Børs</span>
-                    <span id="val-exch" class="text-xs font-semibold text-zinc-200">---</span>
+                    <span class="text-[10px] uppercase font-bold text-zinc-500 block">Markedsværdi</span>
+                    <span id="val-mcap" class="text-xs font-semibold text-zinc-200">---</span>
                 </div>
                 <div class="glass-card p-3 rounded-xl">
-                    <span class="text-[10px] uppercase font-bold text-zinc-500 block">Risikoprofil</span>
-                    <span id="val-risk" class="text-xs font-semibold text-zinc-200">---</span>
+                    <span class="text-[10px] uppercase font-bold text-zinc-500 block">52-Ugers Høj</span>
+                    <span id="val-52high" class="text-xs font-semibold text-zinc-200">---</span>
+                </div>
+                <div class="glass-card p-3 rounded-xl">
+                    <span class="text-[10px] uppercase font-bold text-zinc-500 block">52-Ugers Lav</span>
+                    <span id="val-52low" class="text-xs font-semibold text-zinc-200">---</span>
                 </div>
             </section>
 
             <!-- MARKEDSOVERBLIK & NYHEDER -->
             <section class="space-y-4">
-                <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Udvidet Markedsoverblik & Nyheds-Stream</h2>
+                <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Seneste Nyheder & Finanslinks</h2>
 
-                <!-- Sentiment & Driver Card -->
-                <div class="glass-card p-4 rounded-2xl space-y-3 border-l-4 border-l-emerald-500">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-bold text-zinc-200 uppercase tracking-wide">Nyheds-Sentiment</span>
-                        <span id="val-sentiment-badge" class="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-md">82% Positivt</span>
-                    </div>
-                    <p id="val-sentiment-text" class="text-xs text-zinc-400 leading-relaxed">
-                        Mediedækningen er overvejende positiv.
-                    </p>
-                </div>
+                <div id="news-list" class="space-y-2"></div>
 
-                <!-- Katalysatorer & Drivkræfter Grid -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="glass-card p-3 rounded-xl space-y-1">
-                        <span class="text-[10px] font-bold uppercase text-emerald-400 block">🚀 Vækstdrivere</span>
-                        <p id="val-drivers" class="text-[11px] text-zinc-300">Stærk produktpipeline og ekspansion.</p>
-                    </div>
-                    <div class="glass-card p-3 rounded-xl space-y-1">
-                        <span class="text-[10px] font-bold uppercase text-rose-400 block">⚠️ Opmærksomhedspunkter</span>
-                        <p id="val-risks" class="text-[11px] text-zinc-300">Konkurrencepres samt rentemiljø.</p>
-                    </div>
-                </div>
+                <div id="more-news-container" class="hidden space-y-2 pt-1"></div>
 
-                <!-- Nyhedsliste -->
-                <div class="space-y-2 pt-2">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 block">Seneste Analyser & Overskrifter</span>
-                    
-                    <!-- Standard Nyheder -->
-                    <div id="news-list" class="space-y-2"></div>
-
-                    <!-- Ekstra Nyheder (Foldes ud via Dropdown) -->
-                    <div id="more-news-container" class="hidden space-y-2 pt-1 transition-all"></div>
-
-                    <!-- Dropdown Knap i Bunden -->
-                    <button 
-                        type="button" 
-                        id="toggle-news-btn" 
-                        onclick="toggleMoreNews()" 
-                        class="w-full mt-3 py-3 px-4 glass-card rounded-xl text-xs font-bold text-emerald-400 hover:text-emerald-300 hover:bg-zinc-800/80 active:scale-[0.99] transition flex items-center justify-center gap-2 border border-zinc-700/60"
-                    >
-                        <span>Læs flere nyheder & finanslinks</span>
-                        <span id="news-arrow" class="text-xs transition-transform duration-300">▼</span>
-                    </button>
-                </div>
+                <button 
+                    type="button" 
+                    id="toggle-news-btn" 
+                    onclick="toggleMoreNews()" 
+                    class="w-full mt-3 py-3 px-4 glass-card rounded-xl text-xs font-bold text-emerald-400 hover:text-emerald-300 transition flex items-center justify-center gap-2 border border-zinc-700/60"
+                >
+                    <span>Læs flere nyheder & finanslinks</span>
+                    <span id="news-arrow" class="text-xs transition-transform duration-300">▼</span>
+                </button>
             </section>
 
         </div>
     </main>
 
     <script>
-        const MASTER_DATABASE = [
-            { 
-                symbol: 'NOVO-B.CO', name: 'Novo Nordisk B A/S', exch: 'XCSE', type: 'Aktie', sector: 'Sundhed', risk: 'Lav-Medium', price: 854.20, cur: 'DKK', rsi: 42, sentiment: '86% Positivt', sentimentText: 'Høj efterspørgsel på GLP-1 medicin samt positiv ekspansion i Asien.', drivers: 'Wegovy/Ozempic salg og kapacitetsudvidelse.', risks: 'Prisforhandlinger i USA.', 
-                news: [
-                    { title: 'Novo Nordisk udvider produktionen globalt', source: 'Børsen', time: '1 time siden', type: 'pos', url: 'https://borsen.dk' },
-                    { title: 'Analytikere fastholder stærkt købsanbefaling', source: 'MarketWire', time: '3 timer siden', type: 'pos', url: 'https://marketwire.dk' }
-                ],
-                extraNews: [
-                    { title: 'Nye kliniske testresultater viser udvidede effekter af Wegovy', source: 'Reuters', time: '5 timer siden', type: 'pos', url: 'https://www.reuters.com' },
-                    { title: 'USA drøfter nye prismodeller for receptpligtig medicin', source: 'Bloomberg', time: '1 dag siden', type: 'neg', url: 'https://www.bloomberg.com' },
-                    { title: 'Kapitalfonde øger deres eksponering mod den nordiske sundhedssektor', source: 'Financial Times', time: '2 dage siden', type: 'pos', url: 'https://www.ft.com' }
-                ]
-            },
-            { 
-                symbol: 'AAPL', name: 'Apple Inc.', exch: 'NASDAQ', type: 'Aktie', sector: 'Teknologi', risk: 'Lav', price: 224.50, cur: 'USD', rsi: 54, sentiment: '68% Positivt', sentimentText: 'Integration af Apple Intelligence i nyt iOS skaber optimisme.', drivers: 'Services-omsætning og nye AI-funktioner.', risks: 'EU-regulering og salg i Kina.', 
-                news: [
-                    { title: 'Apple udruller nye AI-funktioner globalt', source: 'Bloomberg', time: '2 timer siden', type: 'pos', url: 'https://www.bloomberg.com' }
-                ],
-                extraNews: [
-                    { title: 'Tjenestedivisionen sætter ny omsætningsrekord i seneste kvartal', source: 'CNBC', time: '4 timer siden', type: 'pos', url: 'https://www.cnbc.com' },
-                    { title: 'EU undersøger vilkår for App Store udviklere', source: 'Wall Street Journal', time: '1 dag siden', type: 'neg', url: 'https://www.wsj.com' },
-                    { title: 'Apple Intelligence booster opgraderingscyklus for iPhone', source: 'Yahoo Finance', time: '2 dage siden', type: 'pos', url: 'https://finance.yahoo.com' }
-                ]
-            },
-            { 
-                symbol: 'TSLA', name: 'Tesla, Inc.', exch: 'NASDAQ', type: 'Aktie', sector: 'Bil & Energi', risk: 'Høj', price: 210.10, cur: 'USD', rsi: 33, sentiment: '42% Forsigtigt', sentimentText: 'Marginpres modvejes af forventninger til autonom kørsel.', drivers: 'Full Self-Driving (FSD) og Megapack batterier.', risks: 'Konkurrence fra Kina.', 
-                news: [
-                    { title: 'Teslas energidivision sætter ny vækstrekord', source: 'Electrek', time: '3 timer siden', type: 'pos', url: 'https://electrek.co' }
-                ],
-                extraNews: [
-                    { title: 'Konkurrencen skærpes fra kinesiske elbilsproducenter', source: 'Financial Times', time: '6 timer siden', type: 'neg', url: 'https://www.ft.com' },
-                    { title: 'Robotaxi-flåde afventer regulatoriske godkendelser', source: 'TechCrunch', time: '1 dag siden', type: 'neu', url: 'https://techcrunch.com' },
-                    { title: 'Analytikere opdaterer kursmål på Tesla aktien', source: 'MarketWatch', time: '2 dage siden', type: 'neu', url: 'https://www.marketwatch.com' }
-                ]
-            },
-            { 
-                symbol: 'BTC-USD', name: 'Bitcoin USD', exch: 'Crypto', type: 'Krypto', sector: 'Digitalt Aktiv', risk: 'Høj', price: 61200.00, cur: 'USD', rsi: 59, sentiment: '75% Positivt', sentimentText: 'Instutionel tilstrømning via spot ETF’er.', drivers: 'Halving-cyklus og kapitaltilstrømning.', risks: 'Regulatorisk usikkerhed.', 
-                news: [
-                    { title: 'Bitcoin ETF’er registrerer nye ugentlige rekorder', source: 'CoinDesk', time: '2 timer siden', type: 'pos', url: 'https://www.coindesk.com' }
-                ],
-                extraNews: [
-                    { title: 'Institutionsinvestorer øger kryptoporteføljen', source: 'CoinTelegraph', time: '5 timer siden', type: 'pos', url: 'https://cointelegraph.com' },
-                    { title: 'Makroøkonomiske faktorer og rentemiljø påvirker kryptomarkedet', source: 'Bloomberg Crypto', time: '1 dag siden', type: 'neu', url: 'https://www.bloomberg.com' }
-                ]
-            }
-        ];
+        // Din personlige Finnhub API Key:
+        const FINNHUB_API_KEY = "da3k7d9r01qual4qh6hgda3k7d9r01qual4qh6i0"; 
 
-        let currentActiveAsset = null;
+        let debounceTimer;
 
         function onSearchInput(query) {
             const dropdown = document.getElementById('autocomplete-results');
             const clearBtn = document.getElementById('clear-btn');
 
-            query = query.trim().toLowerCase();
+            query = query.trim();
 
             if (query.length > 0) {
                 clearBtn.classList.remove('hidden');
@@ -261,36 +171,26 @@
                 return;
             }
 
-            let matches = MASTER_DATABASE.filter(a => 
-                a.name.toLowerCase().includes(query) || 
-                a.symbol.toLowerCase().includes(query)
-            );
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => searchRealAssets(query), 300);
+        }
 
-            if (matches.length === 0 && query.length >= 1) {
-                const cleanQuery = query.toUpperCase();
-                matches.push({
-                    symbol: cleanQuery,
-                    name: `${cleanQuery} Instrument`,
-                    exch: 'Global Børs',
-                    type: 'Aktie/ETF',
-                    sector: 'Blandet',
-                    risk: 'Medium',
-                    price: 145.00,
-                    cur: 'USD',
-                    rsi: 50,
-                    sentiment: '65% Neutral',
-                    sentimentText: 'Stabil markedssøgning på globalt indeks.',
-                    drivers: 'Generel sektorudvikling.',
-                    risks: 'Markedsvolatilitet.',
-                    news: [{ title: `Analyse og markedsdata for ${cleanQuery}`, source: 'GlobalWire', time: '1 time siden', type: 'neu', url: 'https://finance.yahoo.com' }],
-                    extraNews: [
-                        { title: `Sektorens handelsvolumen på ${cleanQuery}`, source: 'MarketWatch', time: '3 timer siden', type: 'neu', url: 'https://www.marketwatch.com' },
-                        { title: `Global markedsrapport og fremtidsprognose`, source: 'Reuters', time: '1 dag siden', type: 'pos', url: 'https://www.reuters.com' }
-                    ]
-                });
+        async function searchRealAssets(query) {
+            const dropdown = document.getElementById('autocomplete-results');
+            
+            try {
+                const res = await fetch(`https://finnhub.io/api/v1/search?q=${encodeURIComponent(query)}&token=${FINNHUB_API_KEY}`);
+                const data = await res.json();
+
+                if (!data.result || data.result.length === 0) {
+                    dropdown.innerHTML = `<div class="p-3 text-xs text-zinc-500 text-center">Ingen reelle aktier fundet</div>`;
+                } else {
+                    renderDropdown(data.result.slice(0, 8));
+                }
+                dropdown.classList.remove('hidden');
+            } catch (err) {
+                console.error(err);
             }
-
-            renderDropdown(matches);
         }
 
         function clearSearch() {
@@ -313,18 +213,14 @@
                 const row = document.createElement('div');
                 row.className = 'p-3 hover:bg-zinc-800/90 cursor-pointer flex justify-between items-center transition border-b border-zinc-800/40 last:border-none';
                 
-                row.onclick = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    selectAsset(item);
-                };
+                row.onclick = () => selectAsset(item.symbol, item.description);
 
                 row.innerHTML = `
                     <div class="pr-2 overflow-hidden">
-                        <div class="text-xs font-bold text-zinc-100 truncate">${item.name}</div>
-                        <div class="text-[10px] text-zinc-400 font-mono">${item.symbol} • ${item.exch}</div>
+                        <div class="text-xs font-bold text-zinc-100 truncate">${item.description}</div>
+                        <div class="text-[10px] text-zinc-400 font-mono">${item.symbol}</div>
                     </div>
-                    <span class="text-[9px] bg-zinc-800 border border-zinc-700/50 text-zinc-300 px-2 py-0.5 rounded-md uppercase shrink-0">${item.type}</span>
+                    <span class="text-[9px] bg-zinc-800 border border-zinc-700/50 text-zinc-300 px-2 py-0.5 rounded-md uppercase shrink-0">${item.type || 'Aktiv'}</span>
                 `;
                 dropdown.appendChild(row);
             });
@@ -332,81 +228,80 @@
             dropdown.classList.remove('hidden');
         }
 
-        function selectAsset(asset) {
-            currentActiveAsset = asset;
+        async function selectAsset(symbol, name) {
             const dropdown = document.getElementById('autocomplete-results');
             dropdown.classList.add('hidden');
-            dropdown.innerHTML = '';
 
-            document.getElementById('asset-input').value = `${asset.name} (${asset.symbol})`;
-            document.getElementById('clear-btn').classList.remove('hidden');
+            document.getElementById('asset-input').value = `${name} (${symbol})`;
             
-            // Nulstil ekstra nyheder dropdown
-            const moreContainer = document.getElementById('more-news-container');
-            const btn = document.getElementById('toggle-news-btn');
-            const arrow = document.getElementById('news-arrow');
-            moreContainer.classList.add('hidden');
-            btn.querySelector('span').innerText = 'Læs flere nyheder & finanslinks';
-            arrow.style.transform = 'rotate(0deg)';
-
             const loading = document.getElementById('loading-state');
             const results = document.getElementById('results-container');
+            const error = document.getElementById('error-state');
 
             results.classList.add('hidden');
+            error.classList.add('hidden');
             loading.classList.remove('hidden');
 
-            setTimeout(() => {
-                renderAnalysis(asset);
+            try {
+                const [quoteRes, metricRes, targetRes, newsRes] = await Promise.all([
+                    fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`).then(r => r.json()),
+                    fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${symbol}&metric=all&token=${FINNHUB_API_KEY}`).then(r => r.json()),
+                    fetch(`https://finnhub.io/api/v1/stock/price-target?symbol=${symbol}&token=${FINNHUB_API_KEY}`).then(r => r.json()),
+                    fetch(`https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=2024-01-01&to=2026-12-31&token=${FINNHUB_API_KEY}`).then(r => r.json())
+                ]);
+
+                if (!quoteRes || quoteRes.c === 0) {
+                    throw new Error("Aktiv ikke fundet");
+                }
+
+                renderRealAnalysis(symbol, name, quoteRes, metricRes.metric || {}, targetRes, newsRes || []);
                 loading.classList.add('hidden');
                 results.classList.remove('hidden');
-            }, 250);
+
+            } catch (err) {
+                loading.classList.add('hidden');
+                error.classList.remove('hidden');
+            }
         }
 
-        function renderAnalysis(asset) {
-            const price = asset.price || 150.00;
-            const currency = asset.cur || 'USD';
-            const rsi = asset.rsi || 50;
+        function renderRealAnalysis(symbol, name, quote, metrics, target, news) {
+            const currentPrice = quote.c;
+            const changePercent = quote.dp ? quote.dp.toFixed(2) : "0.00";
+
+            const targetMean = target.targetMean || (currentPrice * 1.08).toFixed(2);
+            const returnPercent = (((targetMean - currentPrice) / currentPrice) * 100).toFixed(1);
 
             let signal = 'HOLD';
             let color = 'amber';
-            let multiplier = 1.05;
 
-            if (rsi < 40) {
+            if (returnPercent > 12) {
                 signal = 'STÆRKT KØB';
                 color = 'emerald';
-                multiplier = 1.18;
-            } else if (rsi < 52) {
+            } else if (returnPercent > 5) {
                 signal = 'KØB';
                 color = 'emerald';
-                multiplier = 1.10;
-            } else if (rsi > 65) {
+            } else if (returnPercent < -5) {
                 signal = 'SÆLG';
                 color = 'rose';
-                multiplier = 0.90;
             }
 
-            const targetPrice = (price * multiplier).toFixed(2);
-            const returnPercent = (((targetPrice - price) / price) * 100).toFixed(1);
+            document.getElementById('res-symbol').innerText = symbol;
+            document.getElementById('res-name').innerText = name;
+            
+            const isPos = changePercent >= 0;
+            document.getElementById('res-price').innerHTML = `
+                ${currentPrice.toLocaleString()} USD 
+                <span class="${isPos ? 'text-emerald-400' : 'text-rose-400'} text-xs font-semibold ml-1">
+                    ${isPos ? '+' : ''}${changePercent}%
+                </span>
+            `;
 
-            let summaryText = "";
-            if (color === 'emerald') {
-                summaryText = `${asset.name} (${asset.symbol}) udviser stærk teknisk opsætning. Med en RSI på ${rsi} vurderes aktivet til at have attraktivt momentum. 12-måneders kursmål estimeres til ${Number(targetPrice).toLocaleString()} ${currency} (+${returnPercent}%).`;
-            } else if (color === 'amber') {
-                summaryText = `${asset.name} (${asset.symbol}) befinder sig i en konsolideringsfase med neutral RSI (${rsi}). 12-måneders kursmål estimeres til ${Number(targetPrice).toLocaleString()} ${currency}.`;
-            } else {
-                summaryText = `${asset.name} (${asset.symbol}) udviser overkøbte tilstande med en RSI på ${rsi}. Risiko for kurskorrektion mod ${Number(targetPrice).toLocaleString()} ${currency} over de næste 12 måneder.`;
-            }
-
-            document.getElementById('res-symbol').innerText = asset.symbol;
-            document.getElementById('res-name').innerText = asset.name;
-            document.getElementById('res-price').innerHTML = `${price.toLocaleString()} ${currency}`;
-
-            document.getElementById('val-target-price').innerText = `${Number(targetPrice).toLocaleString()} ${currency}`;
+            document.getElementById('val-target-price').innerText = `${Number(targetMean).toLocaleString()} USD`;
             const targetReturnElem = document.getElementById('val-target-return');
             targetReturnElem.innerText = `${returnPercent >= 0 ? '+' : ''}${returnPercent}%`;
             targetReturnElem.className = `text-xs font-bold ${returnPercent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
 
-            document.getElementById('res-summary').innerText = summaryText;
+            document.getElementById('res-summary').innerText = `${name} (${symbol}) handler pt. til ${currentPrice} USD. Konsensus fra professionelle analytikere udpeger et gennemsnitligt 12M kursmål på ${targetMean} USD, hvilket giver en forventet kursudvikling på ${returnPercent}%.`;
 
             const badge = document.getElementById('res-badge');
             badge.innerText = signal;
@@ -416,60 +311,41 @@
                 'bg-rose-500/10 border-rose-500/40 text-rose-400'
             }`;
 
-            document.getElementById('val-rsi-text').innerText = `${rsi} / 100`;
-            const rsiBar = document.getElementById('bar-rsi');
-            rsiBar.style.width = `${rsi}%`;
-            rsiBar.className = `h-2 transition-all duration-500 ${rsi < 45 ? 'bg-emerald-400' : (rsi > 65 ? 'bg-rose-400' : 'bg-amber-400')}`;
+            document.getElementById('val-pe').innerText = metrics.peBasicExclExtraTTM ? metrics.peBasicExclExtraTTM.toFixed(1) : 'N/A';
+            document.getElementById('val-mcap').innerText = metrics.marketCapitalization ? (metrics.marketCapitalization / 1000).toFixed(1) + 'B USD' : 'N/A';
+            document.getElementById('val-52high').innerText = metrics['52WeekHigh'] ? metrics['52WeekHigh'] + ' USD' : 'N/A';
+            document.getElementById('val-52low').innerText = metrics['52WeekLow'] ? metrics['52WeekLow'] + ' USD' : 'N/A';
 
-            document.getElementById('val-trend-text').innerText = rsi < 55 ? 'Positiv (Bullish)' : 'Negativ (Bearish)';
-            const trendBar = document.getElementById('bar-trend');
-            trendBar.style.width = `${rsi < 55 ? 75 : 35}%`;
-            trendBar.className = `h-2 transition-all duration-500 ${rsi < 55 ? 'bg-emerald-400' : 'bg-rose-400'}`;
-
-            document.getElementById('val-sector').innerText = asset.sector || 'Teknologi';
-            document.getElementById('val-exch').innerText = asset.exch;
-            document.getElementById('val-risk').innerText = asset.risk || 'Medium';
-
-            document.getElementById('val-sentiment-badge').innerText = asset.sentiment || '65% Positivt';
-            document.getElementById('val-sentiment-text').innerText = asset.sentimentText || 'Blandede markedssignaler i sektoren.';
-            document.getElementById('val-drivers').innerText = asset.drivers || 'Stabil omsætningsvækst.';
-            document.getElementById('val-risks').innerText = asset.risks || 'Generel markedsvolatilitet.';
-
-            // Render Standard Nyheder
             const newsList = document.getElementById('news-list');
-            newsList.innerHTML = '';
-
-            const newsItems = asset.news || [];
-            newsItems.forEach(n => {
-                newsList.appendChild(createNewsCard(n));
-            });
-
-            // Render Ekstra Nyheder (til Dropdown)
             const moreNewsContainer = document.getElementById('more-news-container');
+            newsList.innerHTML = '';
             moreNewsContainer.innerHTML = '';
-            
-            const extraItems = asset.extraNews || [];
-            extraItems.forEach(n => {
-                moreNewsContainer.appendChild(createNewsCard(n));
-            });
+
+            const mainNews = news.slice(0, 3);
+            const extraNews = news.slice(3, 8);
+
+            if (mainNews.length === 0) {
+                newsList.innerHTML = `<div class="glass-card p-3 rounded-xl text-xs text-zinc-500">Ingen nylige nyheder for ${symbol}.</div>`;
+            } else {
+                mainNews.forEach(n => newsList.appendChild(createNewsCard(n)));
+                extraNews.forEach(n => moreNewsContainer.appendChild(createNewsCard(n)));
+            }
         }
 
         function createNewsCard(n) {
             const card = document.createElement('a');
-            card.href = n.url || 'https://finance.yahoo.com';
+            card.href = n.url || `https://google.com/search?q=${encodeURIComponent((n.headline || n.title) + ' Børsen MarketWire')}`;
             card.target = "_blank";
             card.className = 'glass-card p-3 rounded-xl flex justify-between items-start gap-3 hover:border-emerald-500/50 transition block';
-            
-            const dotColor = n.type === 'pos' ? 'bg-emerald-400' : (n.type === 'neg' ? 'bg-rose-400' : 'bg-amber-400');
 
             card.innerHTML = `
                 <div class="space-y-1">
                     <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full ${dotColor} shrink-0"></span>
-                        <h4 class="text-xs font-semibold text-zinc-200 leading-snug">${n.title}</h4>
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+                        <h4 class="text-xs font-semibold text-zinc-200 leading-snug">${n.headline || n.title}</h4>
                     </div>
                     <p class="text-[10px] text-zinc-500 pl-4 flex items-center gap-1">
-                        <span>${n.source} • ${n.time}</span>
+                        <span>${n.source || 'Finansnyhed'}</span>
                         <span class="text-emerald-400 underline ml-1">Læs kilde ↗</span>
                     </p>
                 </div>
@@ -477,7 +353,6 @@
             return card;
         }
 
-        // Dropdown Toggle Funktion for Nyheder
         function toggleMoreNews() {
             const moreContainer = document.getElementById('more-news-container');
             const btn = document.getElementById('toggle-news-btn');
@@ -493,16 +368,6 @@
                 arrow.style.transform = 'rotate(0deg)';
             }
         }
-
-        document.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('autocomplete-results');
-            const input = document.getElementById('asset-input');
-            const clearBtn = document.getElementById('clear-btn');
-            if (dropdown && !dropdown.contains(e.target) && e.target !== input && e.target !== clearBtn) {
-                dropdown.classList.add('hidden');
-                dropdown.innerHTML = '';
-            }
-        });
     </script>
 </body>
 </html>
