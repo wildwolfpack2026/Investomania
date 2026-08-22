@@ -23,6 +23,18 @@
         .input-error {
             border-color: rgba(244, 63, 94, 0.8) !important;
         }
+
+        .positive {
+            color: #34d399;
+        }
+
+        .negative {
+            color: #fb7185;
+        }
+
+        .neutral {
+            color: #fbbf24;
+        }
     </style>
 </head>
 
@@ -40,30 +52,34 @@
     </div>
 
     <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold">
-        v19.0
+        v20.0
     </span>
 </header>
 
 <main class="max-w-xl mx-auto p-4 space-y-6">
 
-    <!-- Søgefelt -->
+    <!-- SEARCH -->
     <section class="glass-card p-5 rounded-2xl space-y-4 relative z-30">
+
         <h2 class="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-            Søg et reelt aktiv
+            Søg et aktiv
         </h2>
 
         <p class="text-[11px] text-zinc-500">
-            Skriv en ticker, for eksempel AAPL, TSLA, MSFT eller NOVO-B.CO.
+            Skriv en ticker eller et selskabsnavn.
+            Eksempel: AAPL, TSLA, MSFT eller NVIDIA.
         </p>
 
         <div class="relative space-y-2">
+
             <div class="relative flex items-center">
+
                 <input
                     type="text"
                     id="asset-input"
                     autocomplete="off"
                     spellcheck="false"
-                    placeholder="Skriv ticker..."
+                    placeholder="Skriv ticker eller navn..."
                     oninput="onSearchInput(this.value)"
                     onkeydown="handleInputKeydown(event)"
                     class="w-full bg-zinc-900 border border-zinc-700/80 text-zinc-100 text-sm rounded-xl p-3 pr-10 focus:outline-none focus:border-emerald-500 transition uppercase"
@@ -73,97 +89,142 @@
                     type="button"
                     id="clear-btn"
                     onclick="clearSearch()"
-                    class="hidden absolute right-3 w-6 h-6 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700 text-xs font-bold transition"
+                    class="hidden absolute right-3 w-6 h-6 items-center justify-center rounded-full bg-zinc-800 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700 text-xs font-bold transition"
                     title="Slet alt"
                 >
                     ✕
                 </button>
+
             </div>
 
             <div
                 id="autocomplete-results"
                 class="hidden absolute left-0 right-0 top-16 mt-1 bg-zinc-900/95 backdrop-blur-md border border-zinc-700/80 rounded-xl max-h-72 overflow-y-auto z-50 shadow-2xl divide-y divide-zinc-800/60"
             ></div>
+
         </div>
 
         <div id="search-error" class="hidden text-xs text-rose-400"></div>
+
     </section>
 
-    <!-- Loading -->
+
+    <!-- LOADING -->
     <div id="loading-state" class="hidden text-center py-10 space-y-3">
+
         <div class="inline-block w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
 
         <p id="loading-message" class="text-xs text-zinc-400 animate-pulse">
-            Henter ægte markedsdata...
+            Henter markedsdata...
         </p>
+
     </div>
 
-    <!-- Fejl/resultater -->
+
+    <!-- RESULTS -->
     <div id="results-container" class="space-y-6 hidden">
 
-        <!-- Dashboard -->
+        <!-- DASHBOARD -->
         <section class="glass-card rounded-2xl p-6 space-y-5 shadow-2xl relative overflow-hidden">
 
+            <!-- HEADER -->
             <div class="flex justify-between items-start">
+
                 <div class="pr-2">
-                    <span id="res-symbol" class="text-xs font-bold uppercase tracking-widest text-zinc-500 block">
+
+                    <span
+                        id="res-symbol"
+                        class="text-xs font-bold uppercase tracking-widest text-zinc-500 block"
+                    >
                         ---
                     </span>
 
-                    <h3 id="res-name" class="text-2xl font-extrabold text-zinc-100 leading-tight">
+                    <h3
+                        id="res-name"
+                        class="text-2xl font-extrabold text-zinc-100 leading-tight"
+                    >
                         ---
                     </h3>
 
-                    <p id="res-price" class="text-sm font-semibold text-zinc-400 mt-1">
+                    <p
+                        id="res-price"
+                        class="text-sm font-semibold text-zinc-400 mt-1"
+                    >
                         ---
                     </p>
+
                 </div>
 
-                <div id="res-badge" class="px-3.5 py-1.5 rounded-xl border font-black text-xs tracking-wide uppercase shrink-0">
+                <div
+                    id="res-badge"
+                    class="px-3.5 py-1.5 rounded-xl border font-black text-xs tracking-wide uppercase shrink-0"
+                >
                     ---
                 </div>
+
             </div>
 
-            <!-- Kursmål -->
+
+            <!-- TREND SCENARIO -->
             <div class="bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl flex justify-between items-center">
+
                 <div>
+
                     <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
-                        Internt 12M scenarie
+                        Internt trend-scenarie
                     </span>
 
-                    <span id="val-target-price" class="text-lg font-black text-emerald-400">
+                    <span
+                        id="val-target-price"
+                        class="text-lg font-black text-emerald-400"
+                    >
                         ---
                     </span>
+
                 </div>
 
                 <div class="text-right">
+
                     <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
-                        Forventet ændring
+                        Scenarieændring
                     </span>
 
-                    <span id="val-target-return" class="text-xs font-bold">
+                    <span
+                        id="val-target-return"
+                        class="text-xs font-bold"
+                    >
                         ---
                     </span>
+
                 </div>
+
             </div>
 
-            <!-- Historisk graf -->
+
+            <!-- CHART -->
             <div class="space-y-2 pt-2">
+
                 <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
                     Historiske daglige lukkekurser
                 </span>
 
                 <div class="relative w-full h-52 bg-zinc-900/50 rounded-xl p-2 border border-zinc-800/80">
+
                     <canvas id="priceChart"></canvas>
+
                 </div>
 
                 <p class="text-[10px] text-zinc-600">
-                    Grafen bruger historiske data fra StockData.org. Der genereres ikke tilfældige datapunkter.
+                    Historikken kommer direkte fra StockData.org.
+                    Der genereres ingen tilfældige datapunkter.
                 </p>
+
             </div>
 
-            <!-- Indikatorer -->
+
+            <!-- INDICATORS -->
             <div class="space-y-3 pt-3 border-t border-zinc-800/80">
+
                 <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">
                     Tekniske indikatorer
                 </h3>
@@ -172,105 +233,165 @@
 
                     <!-- RSI -->
                     <div class="bg-zinc-900/80 p-3 rounded-xl border border-zinc-800/80 text-center">
+
                         <span class="text-[9px] font-bold text-zinc-400 uppercase block">
                             RSI 14
                         </span>
 
-                        <span id="ind-rsi-val" class="text-sm font-black text-zinc-100 mt-0.5 block">
+                        <span
+                            id="ind-rsi-val"
+                            class="text-sm font-black text-zinc-100 mt-0.5 block"
+                        >
                             --
                         </span>
 
-                        <span id="ind-rsi-signal" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded mt-1 inline-block">
+                        <span
+                            id="ind-rsi-signal"
+                            class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded mt-1 inline-block"
+                        >
                             --
                         </span>
+
                     </div>
+
 
                     <!-- MACD -->
                     <div class="bg-zinc-900/80 p-3 rounded-xl border border-zinc-800/80 text-center">
+
                         <span class="text-[9px] font-bold text-zinc-400 uppercase block">
                             MACD
                         </span>
 
-                        <span id="ind-macd-val" class="text-sm font-black text-zinc-100 mt-0.5 block">
+                        <span
+                            id="ind-macd-val"
+                            class="text-sm font-black text-zinc-100 mt-0.5 block"
+                        >
                             --
                         </span>
 
-                        <span id="ind-macd-signal" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded mt-1 inline-block">
+                        <span
+                            id="ind-macd-signal"
+                            class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded mt-1 inline-block"
+                        >
                             --
                         </span>
+
                     </div>
+
 
                     <!-- SMA -->
                     <div class="bg-zinc-900/80 p-3 rounded-xl border border-zinc-800/80 text-center">
+
                         <span class="text-[9px] font-bold text-zinc-400 uppercase block">
                             SMA trend
                         </span>
 
-                        <span id="ind-sma-val" class="text-xs font-black text-zinc-100 mt-1 block">
+                        <span
+                            id="ind-sma-val"
+                            class="text-xs font-black text-zinc-100 mt-1 block"
+                        >
                             --
                         </span>
 
-                        <span id="ind-sma-signal" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded mt-1 inline-block">
+                        <span
+                            id="ind-sma-signal"
+                            class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded mt-1 inline-block"
+                        >
                             --
                         </span>
+
                     </div>
 
                 </div>
+
             </div>
 
-            <!-- Teknisk vurdering -->
+
+            <!-- SUMMARY -->
             <div class="space-y-1.5 pt-2">
+
                 <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
                     Samlet teknisk vurdering
                 </span>
 
-                <p id="res-summary" class="text-xs text-zinc-300 leading-relaxed bg-zinc-900/40 p-3 rounded-xl border border-zinc-800/60">
+                <p
+                    id="res-summary"
+                    class="text-xs text-zinc-300 leading-relaxed bg-zinc-900/40 p-3 rounded-xl border border-zinc-800/60"
+                >
                     ---
                 </p>
+
             </div>
 
+
             <p class="text-[10px] text-amber-400/80">
-                Dette er kun teknisk information og er ikke personlig investeringsrådgivning.
+                Dette er teknisk information og ikke personlig investeringsrådgivning.
             </p>
+
         </section>
 
-        <!-- Nøgletal -->
+
+        <!-- KEY FIGURES -->
         <section class="grid grid-cols-2 gap-3 text-center">
+
             <div class="glass-card p-3 rounded-xl">
+
                 <span class="text-[10px] uppercase font-bold text-zinc-500 block">
                     Dagshøj / dagslav
                 </span>
 
-                <span id="val-day-range" class="text-xs font-semibold text-zinc-200">
+                <span
+                    id="val-day-range"
+                    class="text-xs font-semibold text-zinc-200"
+                >
                     ---
                 </span>
+
             </div>
 
+
             <div class="glass-card p-3 rounded-xl">
+
                 <span class="text-[10px] uppercase font-bold text-zinc-500 block">
                     52-ugers høj
                 </span>
 
-                <span id="val-52high" class="text-xs font-semibold text-zinc-200">
+                <span
+                    id="val-52high"
+                    class="text-xs font-semibold text-zinc-200"
+                >
                     ---
                 </span>
+
             </div>
+
         </section>
 
-        <!-- Nyheder -->
+
+        <!-- NEWS -->
         <section class="space-y-4">
+
             <div class="flex justify-between items-center">
+
                 <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                    Seneste danske nyheder & analyser
+                    Seneste finansielle nyheder
                 </h2>
 
                 <span class="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    DK Live Feed
+                    LIVE FEED
                 </span>
+
             </div>
 
-            <div id="news-list" class="space-y-2"></div>
-            <div id="more-news-container" class="hidden space-y-2 pt-1"></div>
+            <div
+                id="news-list"
+                class="space-y-2"
+            ></div>
+
+            <div
+                id="more-news-container"
+                class="hidden space-y-2 pt-1"
+            ></div>
 
             <button
                 type="button"
@@ -278,460 +399,773 @@
                 onclick="toggleMoreNews()"
                 class="w-full mt-3 py-3 px-4 glass-card rounded-xl text-xs font-bold text-emerald-400 hover:text-emerald-300 transition flex items-center justify-center gap-2 border border-zinc-700/60"
             >
-                <span>Læs flere danske nyheder & links</span>
 
-                <span id="news-arrow" class="text-xs transition-transform duration-300">
+                <span>
+                    Læs flere nyheder
+                </span>
+
+                <span
+                    id="news-arrow"
+                    class="text-xs transition-transform duration-300"
+                >
                     ▼
                 </span>
+
             </button>
+
         </section>
 
     </div>
+
 </main>
 
+
 <script>
-    /*
-     * INDSÆT DIN NYE API-NØGLE HER.
-     *
-     * Bemærk:
-     * En API-nøgle i en statisk GitHub-side kan ses af alle besøgende.
-     * Den sikre løsning er en backend/proxy med en server-side environment variable.
-     */
-    const STOCKDATA_API_KEY = "INDSÆT_DIN_NYE_STOCKDATA_API_NØGLE_HER";
 
-    const STOCKDATA_QUOTE_URL =
-        "https://api.stockdata.org/v1/data/quote";
+/* ============================================================
+   STOCKDATA API
+   ============================================================ */
 
-    const STOCKDATA_EOD_URL =
-        "https://api.stockdata.org/v1/data/eod";
+const STOCKDATA_API_KEY =
+    "5Cccks4A71Lc9iIdMOEYPhH6UzP7rCMcf9FoDL4t";
 
-    const DEFAULT_ASSETS = [
-        {
-            symbol: "NOVO-B.CO",
-            name: "Novo Nordisk B A/S",
-            exch: "Nasdaq Copenhagen"
-        },
-        {
-            symbol: "MAERSK-B.CO",
-            name: "A.P. Møller - Mærsk B",
-            exch: "Nasdaq Copenhagen"
-        },
-        {
-            symbol: "DSV.CO",
-            name: "DSV A/S",
-            exch: "Nasdaq Copenhagen"
-        },
-        {
-            symbol: "CARL-B.CO",
-            name: "Carlsberg B A/S",
-            exch: "Nasdaq Copenhagen"
-        },
-        {
-            symbol: "ORSTED.CO",
-            name: "Ørsted A/S",
-            exch: "Nasdaq Copenhagen"
-        },
-        {
-            symbol: "VWS.CO",
-            name: "Vestas Wind Systems",
-            exch: "Nasdaq Copenhagen"
-        },
-        {
-            symbol: "AAPL",
-            name: "Apple Inc.",
-            exch: "NASDAQ"
-        },
-        {
-            symbol: "TSLA",
-            name: "Tesla, Inc.",
-            exch: "NASDAQ"
-        },
-        {
-            symbol: "MSFT",
-            name: "Microsoft Corporation",
-            exch: "NASDAQ"
-        },
-        {
-            symbol: "NVDA",
-            name: "NVIDIA Corporation",
-            exch: "NASDAQ"
-        }
-    ];
+const STOCKDATA_QUOTE_URL =
+    "https://api.stockdata.org/v1/data/quote";
 
-    let debounceTimer = null;
-    let searchRequestId = 0;
-    let analysisRequestId = 0;
-    let priceChartInstance = null;
-    let selectedDropdownIndex = -1;
+const STOCKDATA_EOD_URL =
+    "https://api.stockdata.org/v1/data/eod";
 
-    function normalizeSymbol(value) {
-        return String(value || "")
-            .trim()
-            .toUpperCase()
-            .replace(/\s+/g, "");
+const STOCKDATA_ENTITY_URL =
+    "https://api.stockdata.org/v1/entity/search";
+
+const STOCKDATA_NEWS_URL =
+    "https://api.stockdata.org/v1/news/all";
+
+
+/* ============================================================
+   DEFAULT ASSETS
+   ============================================================ */
+
+const DEFAULT_ASSETS = [
+
+    {
+        symbol: "AAPL",
+        name: "Apple Inc.",
+        exch: "NASDAQ"
+    },
+
+    {
+        symbol: "TSLA",
+        name: "Tesla Inc.",
+        exch: "NASDAQ"
+    },
+
+    {
+        symbol: "MSFT",
+        name: "Microsoft Corporation",
+        exch: "NASDAQ"
+    },
+
+    {
+        symbol: "NVDA",
+        name: "NVIDIA Corporation",
+        exch: "NASDAQ"
+    },
+
+    {
+        symbol: "AMZN",
+        name: "Amazon.com Inc.",
+        exch: "NASDAQ"
+    },
+
+    {
+        symbol: "META",
+        name: "Meta Platforms Inc.",
+        exch: "NASDAQ"
+    },
+
+    {
+        symbol: "GOOGL",
+        name: "Alphabet Inc.",
+        exch: "NASDAQ"
+    },
+
+    {
+        symbol: "NFLX",
+        name: "Netflix Inc.",
+        exch: "NASDAQ"
     }
 
-    function normalizeQuery(value) {
-        return String(value || "")
-            .trim()
-            .toUpperCase();
-    }
+];
 
-    function isValidSymbol(symbol) {
-        return /^[A-Z0-9][A-Z0-9.-]{0,24}$/.test(symbol);
-    }
 
-    function escapeHtml(value) {
-        return String(value).replace(/[&<>"']/g, character => ({
+/* ============================================================
+   STATE
+   ============================================================ */
+
+let debounceTimer = null;
+
+let searchRequestId = 0;
+
+let analysisRequestId = 0;
+
+let priceChartInstance = null;
+
+let selectedDropdownIndex = -1;
+
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+
+function normalizeSymbol(value) {
+
+    return String(value || "")
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, "");
+
+}
+
+
+function normalizeQuery(value) {
+
+    return String(value || "")
+        .trim()
+        .toUpperCase();
+
+}
+
+
+function isValidSymbol(symbol) {
+
+    return /^[A-Z0-9][A-Z0-9._-]{0,24}$/.test(symbol);
+
+}
+
+
+function escapeHtml(value) {
+
+    return String(value).replace(
+        /[&<>"']/g,
+        character => ({
             "&": "&amp;",
             "<": "&lt;",
             ">": "&gt;",
             '"': "&quot;",
             "'": "&#039;"
-        }[character]));
+        }[character])
+    );
+
+}
+
+
+function formatNumber(value, digits = 2) {
+
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) {
+        return "N/A";
     }
 
-    function formatNumber(value, digits = 2) {
-        const number = Number(value);
-
-        if (!Number.isFinite(number)) {
-            return "Ikke tilgængelig";
-        }
-
-        return number.toLocaleString("da-DK", {
+    return number.toLocaleString(
+        "da-DK",
+        {
             minimumFractionDigits: digits,
             maximumFractionDigits: digits
-        });
+        }
+    );
+
+}
+
+
+function formatDateLabel(value) {
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "";
     }
 
-    function formatDateLabel(value) {
-        const date = new Date(value);
-
-        if (Number.isNaN(date.getTime())) {
-            return "";
-        }
-
-        return date.toLocaleDateString("da-DK", {
+    return date.toLocaleDateString(
+        "da-DK",
+        {
             day: "2-digit",
             month: "2-digit",
             year: "2-digit"
-        });
+        }
+    );
+
+}
+
+
+function isApiConfigured() {
+
+    return (
+        STOCKDATA_API_KEY &&
+        STOCKDATA_API_KEY.length > 10
+    );
+
+}
+
+
+function inferCurrency(symbol) {
+
+    return "USD";
+
+}
+
+
+/* ============================================================
+   UI STATE
+   ============================================================ */
+
+function setLoading(
+    isLoading,
+    message = "Henter ægte markedsdata..."
+) {
+
+    const loading =
+        document.getElementById("loading-state");
+
+    const messageElement =
+        document.getElementById("loading-message");
+
+    messageElement.textContent = message;
+
+    if (isLoading) {
+        loading.classList.remove("hidden");
+    } else {
+        loading.classList.add("hidden");
     }
 
-    function inferCurrency(symbol) {
-        return normalizeSymbol(symbol).endsWith(".CO")
-            ? "DKK"
-            : "USD";
-    }
+}
 
-    function isApiKeyConfigured() {
+
+function hideResults() {
+
+    document
+        .getElementById("results-container")
+        .classList.add("hidden");
+
+}
+
+
+function clearSearchError() {
+
+    const error =
+        document.getElementById("search-error");
+
+    const input =
+        document.getElementById("asset-input");
+
+    error.textContent = "";
+
+    error.classList.add("hidden");
+
+    input.classList.remove("input-error");
+
+}
+
+
+function showSearchError(message) {
+
+    const error =
+        document.getElementById("search-error");
+
+    const input =
+        document.getElementById("asset-input");
+
+    error.textContent = message;
+
+    error.classList.remove("hidden");
+
+    input.classList.add("input-error");
+
+}
+
+
+function showError(message) {
+
+    setLoading(false);
+
+    const results =
+        document.getElementById("results-container");
+
+    results.innerHTML = `
+
+        <section class="glass-card rounded-2xl p-6 border border-rose-500/30">
+
+            <div class="text-sm font-bold text-rose-400">
+                Data kunne ikke hentes
+            </div>
+
+            <p class="text-xs text-zinc-400 mt-2">
+                ${escapeHtml(message)}
+            </p>
+
+            <p class="text-[10px] text-zinc-600 mt-3">
+                Der vises ingen kunstige markedsdata.
+            </p>
+
+        </section>
+
+    `;
+
+    results.classList.remove("hidden");
+
+}
+
+
+/* ============================================================
+   LOCAL SEARCH
+   ============================================================ */
+
+function findLocalMatches(query) {
+
+    const normalized =
+        normalizeQuery(query).toLowerCase();
+
+    return DEFAULT_ASSETS.filter(item => {
+
         return (
-            STOCKDATA_API_KEY &&
-            STOCKDATA_API_KEY !==
-                "INDSÆT_DIN_NYE_STOCKDATA_API_NØGLE_HER"
+            item.symbol
+                .toLowerCase()
+                .includes(normalized)
+            ||
+            item.name
+                .toLowerCase()
+                .includes(normalized)
         );
-    }
 
-    function getApiErrorMessage(json, status) {
-        if (json && typeof json.message === "string") {
-            return json.message;
+    });
+
+}
+
+
+function sortMatches(items, query) {
+
+    const q =
+        normalizeQuery(query);
+
+    return [...items].sort((a, b) => {
+
+        const aSymbol =
+            normalizeSymbol(a.symbol);
+
+        const bSymbol =
+            normalizeSymbol(b.symbol);
+
+        if (aSymbol === q && bSymbol !== q) {
+            return -1;
         }
 
-        if (json && typeof json.error === "string") {
-            return json.error;
+        if (bSymbol === q && aSymbol !== q) {
+            return 1;
         }
 
-        if (status === 401 || status === 403) {
-            return "API-nøglen er ugyldig eller ikke autoriseret.";
+        if (
+            aSymbol.startsWith(q) &&
+            !bSymbol.startsWith(q)
+        ) {
+            return -1;
         }
 
-        if (status === 429) {
-            return "API-grænsen er nået. Prøv igen senere.";
+        if (
+            bSymbol.startsWith(q) &&
+            !aSymbol.startsWith(q)
+        ) {
+            return 1;
         }
 
-        return "Dataleverandøren returnerede ingen brugbare data.";
+        return aSymbol.localeCompare(bSymbol);
+
+    });
+
+}
+
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
+
+function onSearchInput(query) {
+
+    const dropdown =
+        document.getElementById(
+            "autocomplete-results"
+        );
+
+    const clearButton =
+        document.getElementById("clear-btn");
+
+    clearSearchError();
+
+    query = query.trim();
+
+    if (!query) {
+
+        clearButton.classList.add("hidden");
+
+        dropdown.classList.add("hidden");
+
+        dropdown.innerHTML = "";
+
+        selectedDropdownIndex = -1;
+
+        return;
+
     }
 
-    function setLoading(isLoading, message = "Henter ægte markedsdata...") {
-        const loading = document.getElementById("loading-state");
-        const messageElement = document.getElementById("loading-message");
+    clearButton.classList.remove("hidden");
 
-        messageElement.textContent = message;
+    const localMatches =
+        findLocalMatches(query);
 
-        if (isLoading) {
-            loading.classList.remove("hidden");
-        } else {
-            loading.classList.add("hidden");
-        }
+    if (localMatches.length) {
+
+        renderDropdown(
+            sortMatches(
+                localMatches,
+                query
+            )
+        );
+
+    } else {
+
+        renderSearching();
+
     }
 
-    function hideResults() {
-        document.getElementById("results-container").classList.add("hidden");
+    clearTimeout(debounceTimer);
+
+    const requestId =
+        ++searchRequestId;
+
+    debounceTimer = setTimeout(
+        () => searchStockDataAPI(
+            query,
+            localMatches,
+            requestId
+        ),
+        300
+    );
+
+}
+
+
+function renderSearching() {
+
+    const dropdown =
+        document.getElementById(
+            "autocomplete-results"
+        );
+
+    dropdown.innerHTML = `
+
+        <div class="p-4 text-center text-xs text-zinc-500">
+            Søger hos StockData.org...
+        </div>
+
+    `;
+
+    dropdown.classList.remove("hidden");
+
+}
+
+
+function renderNoResults(query) {
+
+    const dropdown =
+        document.getElementById(
+            "autocomplete-results"
+        );
+
+    dropdown.innerHTML = `
+
+        <div class="p-4 text-center">
+
+            <div class="text-xs font-semibold text-rose-400">
+                Intet aktiv fundet
+            </div>
+
+            <div class="text-[10px] text-zinc-500 mt-1">
+                Prøv en anden ticker eller et selskabsnavn.
+            </div>
+
+        </div>
+
+    `;
+
+    dropdown.classList.remove("hidden");
+
+    selectedDropdownIndex = -1;
+
+}
+
+
+/* ============================================================
+   STOCKDATA ENTITY SEARCH
+   ============================================================ */
+
+async function searchStockDataAPI(
+    query,
+    existingMatches,
+    requestId
+) {
+
+    if (requestId !== searchRequestId) {
+        return;
     }
 
-    function clearSearchError() {
-        const error = document.getElementById("search-error");
-        const input = document.getElementById("asset-input");
+    try {
 
-        error.textContent = "";
-        error.classList.add("hidden");
-        input.classList.remove("input-error");
-    }
+        const params =
+            new URLSearchParams();
 
-    function showSearchError(message) {
-        const error = document.getElementById("search-error");
-        const input = document.getElementById("asset-input");
-
-        error.textContent = message;
-        error.classList.remove("hidden");
-        input.classList.add("input-error");
-    }
-
-    function showError(message) {
-        setLoading(false);
-
-        const results = document.getElementById("results-container");
-
-        results.innerHTML = `
-            <section class="glass-card rounded-2xl p-6 border border-rose-500/30">
-                <div class="text-sm font-bold text-rose-400">
-                    Data kunne ikke hentes
-                </div>
-
-                <p class="text-xs text-zinc-400 mt-2">
-                    ${escapeHtml(message)}
-                </p>
-
-                <p class="text-[10px] text-zinc-600 mt-3">
-                    Der vises ingen dummykurs eller kunstige markedsdata.
-                </p>
-            </section>
-        `;
-
-        results.classList.remove("hidden");
-    }
-
-    function sortMatches(items, query) {
-        const normalizedQuery = normalizeQuery(query);
-
-        return [...items].sort((a, b) => {
-            const aSymbol = normalizeSymbol(a.symbol);
-            const bSymbol = normalizeSymbol(b.symbol);
-
-            const aExact = aSymbol === normalizedQuery;
-            const bExact = bSymbol === normalizedQuery;
-
-            if (aExact && !bExact) {
-                return -1;
-            }
-
-            if (!aExact && bExact) {
-                return 1;
-            }
-
-            const aStarts = aSymbol.startsWith(normalizedQuery);
-            const bStarts = bSymbol.startsWith(normalizedQuery);
-
-            if (aStarts && !bStarts) {
-                return -1;
-            }
-
-            if (!aStarts && bStarts) {
-                return 1;
-            }
-
-            return aSymbol.localeCompare(bSymbol);
-        });
-    }
-
-    function findLocalMatches(query) {
-        const normalizedQuery = normalizeQuery(query).toLowerCase();
-
-        return DEFAULT_ASSETS.filter(item => {
-            return (
-                item.symbol.toLowerCase().includes(normalizedQuery) ||
-                item.name.toLowerCase().includes(normalizedQuery)
-            );
-        });
-    }
-
-    function onSearchInput(query) {
-        const dropdown = document.getElementById("autocomplete-results");
-        const clearButton = document.getElementById("clear-btn");
-
-        clearSearchError();
-
-        query = query.trim();
-
-        if (query.length === 0) {
-            clearButton.classList.add("hidden");
-            dropdown.classList.add("hidden");
-            dropdown.innerHTML = "";
-            selectedDropdownIndex = -1;
-            return;
-        }
-
-        clearButton.classList.remove("hidden");
-
-        const localMatches = sortMatches(
-            findLocalMatches(query),
+        params.set(
+            "search",
             query
         );
 
-        if (localMatches.length > 0) {
-            renderDropdown(localMatches);
-        } else {
-            renderSearching();
+        params.set(
+            "api_token",
+            STOCKDATA_API_KEY
+        );
+
+        const response =
+            await fetch(
+                `${STOCKDATA_ENTITY_URL}?${params.toString()}`,
+                {
+                    method: "GET",
+                    headers: {
+                        Accept: "application/json"
+                    }
+                }
+            );
+
+        const json =
+            await safeJson(response);
+
+        if (!response.ok) {
+
+            throw new Error(
+                getApiErrorMessage(
+                    json,
+                    response.status
+                )
+            );
+
         }
 
-        clearTimeout(debounceTimer);
-
-        const requestId = ++searchRequestId;
-
-        debounceTimer = setTimeout(() => {
-            searchStockDataAPI(query, localMatches, requestId);
-        }, 350);
-    }
-
-    function renderSearching() {
-        const dropdown = document.getElementById("autocomplete-results");
-
-        dropdown.innerHTML = `
-            <div class="p-4 text-center text-xs text-zinc-500">
-                Kontrollerer ticker hos StockData.org...
-            </div>
-        `;
-
-        dropdown.classList.remove("hidden");
-    }
-
-    function renderNoResults(query) {
-        const dropdown = document.getElementById("autocomplete-results");
-
-        dropdown.innerHTML = `
-            <div class="p-4 text-center">
-                <div class="text-xs font-semibold text-rose-400">
-                    Intet aktiv fundet
-                </div>
-
-                <div class="text-[10px] text-zinc-500 mt-1">
-                    Kontroller ticker eller stavning:
-                    ${escapeHtml(query)}
-                </div>
-            </div>
-        `;
-
-        dropdown.classList.remove("hidden");
-        selectedDropdownIndex = -1;
-    }
-
-    async function searchStockDataAPI(query, existingMatches, requestId) {
-        const normalizedQuery = normalizeQuery(query);
-
-        if (!isValidSymbol(normalizedQuery)) {
-            if (existingMatches.length === 0) {
-                renderNoResults(query);
-            }
-
+        if (requestId !== searchRequestId) {
             return;
         }
 
-        try {
-            const quoteJson = await fetchQuote(normalizedQuery);
+        const apiItems =
+            extractEntityItems(json);
 
-            if (requestId !== searchRequestId) {
-                return;
-            }
+        const combined =
+            [...existingMatches];
 
-            const apiItems = extractValidQuoteItems(
-                quoteJson,
-                normalizedQuery
-            );
+        apiItems.forEach(item => {
 
-            const combined = [...existingMatches];
-
-            apiItems.forEach(item => {
-                const alreadyExists = combined.some(existing => {
-                    return (
-                        normalizeSymbol(existing.symbol) ===
-                        normalizeSymbol(item.symbol)
-                    );
-                });
-
-                if (!alreadyExists) {
-                    combined.push(item);
-                }
-            });
-
-            if (combined.length > 0) {
-                renderDropdown(sortMatches(combined, normalizedQuery));
-            } else {
-                renderNoResults(query);
-            }
-        } catch (error) {
-            if (requestId !== searchRequestId) {
-                return;
-            }
-
-            if (existingMatches.length > 0) {
-                renderDropdown(
-                    sortMatches(existingMatches, normalizedQuery)
+            const exists =
+                combined.some(existing =>
+                    normalizeSymbol(
+                        existing.symbol
+                    ) === normalizeSymbol(
+                        item.symbol
+                    )
                 );
-            } else {
-                renderNoResults(query);
+
+            if (!exists) {
+                combined.push(item);
             }
 
-            console.error("Fejl under symbolopslag:", error);
-        }
-    }
-
-    async function fetchQuote(symbol) {
-        if (!isApiKeyConfigured()) {
-            throw new Error("StockData API-nøglen mangler.");
-        }
-
-        const url =
-            `${STOCKDATA_QUOTE_URL}` +
-            `?symbols=${encodeURIComponent(symbol)}` +
-            `&api_token=${encodeURIComponent(STOCKDATA_API_KEY)}`;
-
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                Accept: "application/json"
-            }
         });
 
-        let json = {};
+        if (combined.length) {
 
-        try {
-            json = await response.json();
-        } catch {
-            throw new Error("API'et returnerede et ugyldigt svar.");
-        }
-
-        if (!response.ok) {
-            throw new Error(
-                getApiErrorMessage(json, response.status)
+            renderDropdown(
+                sortMatches(
+                    combined,
+                    query
+                )
             );
+
+        } else {
+
+            renderNoResults(query);
+
         }
 
-        return json;
+    } catch (error) {
+
+        console.warn(
+            "Entity search fejl:",
+            error
+        );
+
+        if (existingMatches.length) {
+
+            renderDropdown(
+                sortMatches(
+                    existingMatches,
+                    query
+                )
+            );
+
+        } else {
+
+            renderNoResults(query);
+
+        }
+
     }
 
-    async function fetchEodHistory(symbol) {
-        if (!isApiKeyConfigured()) {
-            throw new Error("StockData API-nøglen mangler.");
-        }
+}
 
-        const params = new URLSearchParams({
-            symbols: symbol,
-            interval: "day",
-            sort: "asc",
-            api_token: STOCKDATA_API_KEY
-        });
 
-        const response = await fetch(
+function extractEntityItems(json) {
+
+    if (
+        !json ||
+        !Array.isArray(json.data)
+    ) {
+        return [];
+    }
+
+    return json.data
+        .filter(item =>
+            item &&
+            item.symbol &&
+            item.name
+        )
+        .filter(item =>
+            isValidSymbol(
+                normalizeSymbol(
+                    item.symbol
+                )
+            )
+        )
+        .map(item => ({
+
+            symbol:
+                normalizeSymbol(
+                    item.symbol
+                ),
+
+            name:
+                item.name,
+
+            exch:
+                item.exchange_long ||
+                item.exchange ||
+                "Børs"
+
+        }));
+
+}
+
+
+/* ============================================================
+   QUOTE
+   ============================================================ */
+
+async function fetchQuote(symbol) {
+
+    if (!isApiConfigured()) {
+        throw new Error(
+            "StockData API-nøglen mangler."
+        );
+    }
+
+    const params =
+        new URLSearchParams();
+
+    params.set(
+        "symbols",
+        symbol
+    );
+
+    params.set(
+        "api_token",
+        STOCKDATA_API_KEY
+    );
+
+    params.set(
+        "extended_hours",
+        "true"
+    );
+
+    const response =
+        await fetch(
+            `${STOCKDATA_QUOTE_URL}?${params.toString()}`,
+            {
+                method: "GET",
+                headers: {
+                    Accept: "application/json"
+                }
+            }
+        );
+
+    const json =
+        await safeJson(response);
+
+    if (!response.ok) {
+
+        throw new Error(
+            getApiErrorMessage(
+                json,
+                response.status
+            )
+        );
+
+    }
+
+    return json;
+
+}
+
+
+/* ============================================================
+   EOD
+   ============================================================ */
+
+async function fetchEodHistory(symbol) {
+
+    if (!isApiConfigured()) {
+        throw new Error(
+            "StockData API-nøglen mangler."
+        );
+    }
+
+    const params =
+        new URLSearchParams();
+
+    params.set(
+        "symbols",
+        symbol
+    );
+
+    params.set(
+        "interval",
+        "day"
+    );
+
+    params.set(
+        "sort",
+        "asc"
+    );
+
+    params.set(
+        "api_token",
+        STOCKDATA_API_KEY
+    );
+
+    const response =
+        await fetch(
             `${STOCKDATA_EOD_URL}?${params.toString()}`,
             {
                 method: "GET",
@@ -741,148 +1175,377 @@
             }
         );
 
-        let json = {};
+    const json =
+        await safeJson(response);
 
-        try {
-            json = await response.json();
-        } catch {
-            throw new Error(
-                "EOD-endpointet returnerede et ugyldigt svar."
+    if (!response.ok) {
+
+        throw new Error(
+            getApiErrorMessage(
+                json,
+                response.status
+            )
+        );
+
+    }
+
+    return json;
+
+}
+
+
+/* ============================================================
+   NEWS
+   ============================================================ */
+
+async function fetchStockNews(symbol) {
+
+    try {
+
+        const params =
+            new URLSearchParams();
+
+        params.set(
+            "symbols",
+            symbol
+        );
+
+        params.set(
+            "language",
+            "en,da"
+        );
+
+        params.set(
+            "limit",
+            "8"
+        );
+
+        params.set(
+            "api_token",
+            STOCKDATA_API_KEY
+        );
+
+        const response =
+            await fetch(
+                `${STOCKDATA_NEWS_URL}?${params.toString()}`,
+                {
+                    method: "GET",
+                    headers: {
+                        Accept: "application/json"
+                    }
+                }
             );
-        }
 
         if (!response.ok) {
-            throw new Error(
-                getApiErrorMessage(json, response.status)
-            );
+            return [];
         }
 
-        return json;
-    }
+        const json =
+            await safeJson(response);
 
-    function extractValidQuoteItems(json, requestedSymbol) {
-        if (!json || !Array.isArray(json.data)) {
+        if (
+            !json ||
+            !Array.isArray(json.data)
+        ) {
             return [];
         }
 
         return json.data
-            .filter(item => {
-                if (!item || typeof item.ticker !== "string") {
-                    return false;
-                }
-
-                return (
-                    normalizeSymbol(item.ticker) ===
-                        normalizeSymbol(requestedSymbol) &&
-                    isValidQuote(item)
-                );
-            })
+            .filter(item =>
+                item &&
+                item.title &&
+                item.url
+            )
             .map(item => ({
-                symbol: normalizeSymbol(item.ticker),
-                name: item.name || item.ticker,
-                exch:
-                    item.exchange_short ||
-                    item.exchange_long ||
-                    "Børs"
+
+                title:
+                    item.title,
+
+                source:
+                    item.source ||
+                    item.source_name ||
+                    "StockData.org",
+
+                url:
+                    item.url,
+
+                time:
+                    formatNewsDate(
+                        item.published_at
+                    )
+
             }));
-    }
 
-    function isValidQuote(data) {
-        const ticker = normalizeSymbol(data?.ticker);
-        const price = Number(data?.price);
+    } catch (error) {
 
-        return (
-            ticker.length > 0 &&
-            isValidSymbol(ticker) &&
-            Number.isFinite(price) &&
-            price > 0
+        console.warn(
+            "StockData news fejl:",
+            error
         );
+
+        return [];
+
     }
 
-    function extractEodRows(json, requestedSymbol) {
-        if (!json || !Array.isArray(json.data)) {
-            return [];
-        }
+}
 
-        return json.data
-            .map(row => {
-                const close = Number(row.close);
-                const date = row.date;
 
-                return {
-                    date,
-                    close,
-                    open: Number(row.open),
-                    high: Number(row.high),
-                    low: Number(row.low),
-                    volume: Number(row.volume),
-                    ticker: normalizeSymbol(row.ticker || requestedSymbol)
-                };
-            })
-            .filter(row => {
-                return (
-                    row.date &&
-                    Number.isFinite(row.close) &&
-                    row.close > 0
-                );
-            })
-            .sort((a, b) => {
-                return new Date(a.date) - new Date(b.date);
-            });
-    }
+/* ============================================================
+   SAFE JSON
+   ============================================================ */
 
-    function findExactQuote(json, requestedSymbol) {
-        if (!json || !Array.isArray(json.data)) {
-            return null;
-        }
+async function safeJson(response) {
 
-        return (
-            json.data.find(item => {
-                return (
-                    item &&
-                    typeof item.ticker === "string" &&
-                    normalizeSymbol(item.ticker) ===
-                        normalizeSymbol(requestedSymbol) &&
-                    isValidQuote(item)
-                );
-            }) || null
+    try {
+
+        return await response.json();
+
+    } catch {
+
+        throw new Error(
+            "API'et returnerede et ugyldigt svar."
         );
+
     }
 
-    function renderDropdown(items) {
-        const dropdown = document.getElementById("autocomplete-results");
+}
 
-        dropdown.innerHTML = "";
-        selectedDropdownIndex = -1;
 
-        if (!Array.isArray(items) || items.length === 0) {
-            renderNoResults("");
-            return;
-        }
+/* ============================================================
+   API ERRORS
+   ============================================================ */
 
-        items.forEach((item, index) => {
-            const row = document.createElement("button");
+function getApiErrorMessage(
+    json,
+    status
+) {
+
+    if (
+        json &&
+        json.error &&
+        typeof json.error.message === "string"
+    ) {
+        return json.error.message;
+    }
+
+    if (
+        json &&
+        typeof json.message === "string"
+    ) {
+        return json.message;
+    }
+
+    if (status === 401) {
+        return "API-nøglen er ugyldig.";
+    }
+
+    if (status === 402) {
+        return "API-forbrugets grænse er nået.";
+    }
+
+    if (status === 403) {
+        return "Dette API-endpoint er ikke inkluderet i dit abonnement.";
+    }
+
+    if (status === 404) {
+        return "API-endpointet blev ikke fundet.";
+    }
+
+    if (status === 429) {
+        return "For mange API-requests. Prøv igen om lidt.";
+    }
+
+    return `API-fejl (${status}).`;
+
+}
+
+
+/* ============================================================
+   QUOTE PARSING
+   ============================================================ */
+
+function findExactQuote(
+    json,
+    symbol
+) {
+
+    if (
+        !json ||
+        !Array.isArray(json.data)
+    ) {
+        return null;
+    }
+
+    return (
+        json.data.find(item =>
+            item &&
+            item.ticker &&
+            normalizeSymbol(
+                item.ticker
+            ) === normalizeSymbol(symbol)
+        ) ||
+        null
+    );
+
+}
+
+
+function isValidQuote(data) {
+
+    const price =
+        Number(data?.price);
+
+    return (
+        data &&
+        data.ticker &&
+        Number.isFinite(price) &&
+        price > 0
+    );
+
+}
+
+
+/* ============================================================
+   EOD PARSING
+   ============================================================ */
+
+function extractEodRows(
+    json,
+    requestedSymbol
+) {
+
+    if (
+        !json ||
+        !Array.isArray(json.data)
+    ) {
+        return [];
+    }
+
+    return json.data
+        .map(row => {
+
+            /*
+             * StockData EOD bruger:
+             *
+             * date
+             * ticker
+             * open
+             * high
+             * low
+             * close
+             * volume
+             */
+
+            return {
+
+                date:
+                    row.date,
+
+                ticker:
+                    normalizeSymbol(
+                        row.ticker ||
+                        requestedSymbol
+                    ),
+
+                open:
+                    Number(row.open),
+
+                high:
+                    Number(row.high),
+
+                low:
+                    Number(row.low),
+
+                close:
+                    Number(row.close),
+
+                volume:
+                    Number(row.volume)
+
+            };
+
+        })
+        .filter(row =>
+            row.date &&
+            Number.isFinite(row.close) &&
+            row.close > 0
+        )
+        .sort(
+            (a, b) =>
+                new Date(a.date) -
+                new Date(b.date)
+        );
+
+}
+
+
+/* ============================================================
+   DROPDOWN
+   ============================================================ */
+
+function renderDropdown(items) {
+
+    const dropdown =
+        document.getElementById(
+            "autocomplete-results"
+        );
+
+    dropdown.innerHTML = "";
+
+    selectedDropdownIndex = -1;
+
+    if (
+        !Array.isArray(items) ||
+        items.length === 0
+    ) {
+
+        renderNoResults("");
+
+        return;
+
+    }
+
+    items.slice(0, 12).forEach(
+        (item, index) => {
+
+            const row =
+                document.createElement("button");
 
             row.type = "button";
-            row.dataset.index = String(index);
+
+            row.dataset.index =
+                String(index);
+
             row.className =
-                "w-full text-left p-3 hover:bg-zinc-800/90 " +
-                "cursor-pointer flex justify-between items-center " +
-                "transition border-b border-zinc-800/40 last:border-none";
+                "w-full text-left p-3 " +
+                "hover:bg-zinc-800/90 " +
+                "cursor-pointer flex " +
+                "justify-between items-center " +
+                "transition border-b " +
+                "border-zinc-800/40 " +
+                "last:border-none";
 
-            row.addEventListener("click", event => {
-                event.preventDefault();
-                event.stopPropagation();
+            row.addEventListener(
+                "click",
+                event => {
 
-                selectAsset(
-                    item.symbol,
-                    item.name,
-                    item.exch
-                );
-            });
+                    event.preventDefault();
+
+                    event.stopPropagation();
+
+                    selectAsset(
+                        item.symbol,
+                        item.name,
+                        item.exch
+                    );
+
+                }
+            );
 
             row.innerHTML = `
+
                 <div class="pr-2 overflow-hidden">
+
                     <div class="text-xs font-bold text-zinc-100 truncate">
                         ${escapeHtml(item.name)}
                     </div>
@@ -892,280 +1555,370 @@
                         •
                         ${escapeHtml(item.exch)}
                     </div>
+
                 </div>
 
                 <span class="text-[9px] bg-zinc-800 border border-zinc-700/50 text-zinc-300 px-2 py-0.5 rounded-md uppercase shrink-0">
                     Vælg
                 </span>
+
             `;
 
             dropdown.appendChild(row);
-        });
 
-        dropdown.classList.remove("hidden");
-    }
+        }
+    );
 
-    function handleInputKeydown(event) {
-        const dropdown = document.getElementById("autocomplete-results");
-        const rows = [
-            ...dropdown.querySelectorAll("button[data-index]")
+    dropdown.classList.remove("hidden");
+
+}
+
+
+/* ============================================================
+   KEYBOARD NAVIGATION
+   ============================================================ */
+
+function handleInputKeydown(event) {
+
+    const dropdown =
+        document.getElementById(
+            "autocomplete-results"
+        );
+
+    const rows =
+        [
+            ...dropdown.querySelectorAll(
+                "button[data-index]"
+            )
         ];
 
-        if (
-            dropdown.classList.contains("hidden") ||
-            rows.length === 0
-        ) {
-            return;
-        }
+    if (
+        dropdown.classList.contains("hidden") ||
+        rows.length === 0
+    ) {
+        return;
+    }
 
-        if (event.key === "ArrowDown") {
-            event.preventDefault();
+    if (event.key === "ArrowDown") {
 
-            selectedDropdownIndex = Math.min(
+        event.preventDefault();
+
+        selectedDropdownIndex =
+            Math.min(
                 selectedDropdownIndex + 1,
                 rows.length - 1
             );
 
-            updateDropdownSelection(rows);
-        }
+        updateDropdownSelection(rows);
 
-        if (event.key === "ArrowUp") {
-            event.preventDefault();
+    }
 
-            selectedDropdownIndex = Math.max(
+    if (event.key === "ArrowUp") {
+
+        event.preventDefault();
+
+        selectedDropdownIndex =
+            Math.max(
                 selectedDropdownIndex - 1,
                 0
             );
 
-            updateDropdownSelection(rows);
-        }
+        updateDropdownSelection(rows);
 
-        if (
-            event.key === "Enter" &&
-            selectedDropdownIndex >= 0
-        ) {
-            event.preventDefault();
-            rows[selectedDropdownIndex].click();
-        }
-
-        if (event.key === "Escape") {
-            dropdown.classList.add("hidden");
-        }
     }
 
-    function updateDropdownSelection(rows) {
-        rows.forEach((row, index) => {
+    if (
+        event.key === "Enter" &&
+        selectedDropdownIndex >= 0
+    ) {
+
+        event.preventDefault();
+
+        rows[
+            selectedDropdownIndex
+        ].click();
+
+    }
+
+    if (event.key === "Escape") {
+
+        dropdown.classList.add("hidden");
+
+    }
+
+}
+
+
+function updateDropdownSelection(rows) {
+
+    rows.forEach(
+        (row, index) => {
+
             row.classList.toggle(
                 "bg-zinc-800",
                 index === selectedDropdownIndex
             );
-        });
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   CLEAR
+   ============================================================ */
+
+function clearSearch() {
+
+    const input =
+        document.getElementById(
+            "asset-input"
+        );
+
+    const clearButton =
+        document.getElementById(
+            "clear-btn"
+        );
+
+    const dropdown =
+        document.getElementById(
+            "autocomplete-results"
+        );
+
+    clearTimeout(debounceTimer);
+
+    searchRequestId++;
+
+    analysisRequestId++;
+
+    input.value = "";
+
+    clearButton.classList.add("hidden");
+
+    dropdown.classList.add("hidden");
+
+    dropdown.innerHTML = "";
+
+    clearSearchError();
+
+    hideResults();
+
+    input.focus();
+
+}
+
+
+/* ============================================================
+   SELECT ASSET
+   ============================================================ */
+
+async function selectAsset(
+    symbol,
+    name,
+    exch
+) {
+
+    const normalizedSymbol =
+        normalizeSymbol(symbol);
+
+    if (
+        !isValidSymbol(
+            normalizedSymbol
+        )
+    ) {
+
+        showError(
+            "Det valgte symbol er ugyldigt."
+        );
+
+        return;
+
     }
 
-    function clearSearch() {
-        const input = document.getElementById("asset-input");
-        const clearButton = document.getElementById("clear-btn");
-        const dropdown = document.getElementById("autocomplete-results");
+    const dropdown =
+        document.getElementById(
+            "autocomplete-results"
+        );
 
-        clearTimeout(debounceTimer);
-        searchRequestId++;
-        analysisRequestId++;
+    const input =
+        document.getElementById(
+            "asset-input"
+        );
 
-        input.value = "";
-        clearButton.classList.add("hidden");
+    const currentRequestId =
+        ++analysisRequestId;
 
-        dropdown.classList.add("hidden");
-        dropdown.innerHTML = "";
+    dropdown.classList.add("hidden");
 
-        clearSearchError();
-        hideResults();
+    input.value =
+        `${name} (${normalizedSymbol})`;
 
-        input.focus();
-    }
+    clearSearchError();
 
-    async function selectAsset(symbol, name, exch) {
-        const normalizedSymbol = normalizeSymbol(symbol);
+    hideResults();
 
-        if (!isValidSymbol(normalizedSymbol)) {
-            showError("Det valgte symbol er ugyldigt.");
+    setLoading(
+        true,
+        `Henter ${normalizedSymbol}...`
+    );
+
+    try {
+
+        const [
+            quoteJson,
+            eodJson,
+            news
+        ] = await Promise.all([
+
+            fetchQuote(
+                normalizedSymbol
+            ),
+
+            fetchEodHistory(
+                normalizedSymbol
+            ),
+
+            fetchStockNews(
+                normalizedSymbol
+            )
+
+        ]);
+
+        if (
+            currentRequestId !==
+            analysisRequestId
+        ) {
             return;
         }
 
-        const dropdown = document.getElementById("autocomplete-results");
-        const input = document.getElementById("asset-input");
-        const currentRequestId = ++analysisRequestId;
-
-        dropdown.classList.add("hidden");
-        input.value = `${name} (${normalizedSymbol})`;
-
-        clearSearchError();
-        hideResults();
-
-        setLoading(
-            true,
-            `Henter quote og historik for ${normalizedSymbol}...`
-        );
-
-        try {
-            const [quoteJson, eodJson] = await Promise.all([
-                fetchQuote(normalizedSymbol),
-                fetchEodHistory(normalizedSymbol)
-            ]);
-
-            if (currentRequestId !== analysisRequestId) {
-                return;
-            }
-
-            const quoteData = findExactQuote(
+        const quoteData =
+            findExactQuote(
                 quoteJson,
                 normalizedSymbol
             );
 
-            if (!quoteData) {
-                throw new Error(
-                    `StockData.org returnerede ingen gyldig quote for ${normalizedSymbol}.`
-                );
-            }
+        if (
+            !quoteData ||
+            !isValidQuote(quoteData)
+        ) {
 
-            const history = extractEodRows(
+            throw new Error(
+                `Ingen quote blev fundet for ${normalizedSymbol}.`
+            );
+
+        }
+
+        const history =
+            extractEodRows(
                 eodJson,
                 normalizedSymbol
             );
 
-            if (history.length < 30) {
-                throw new Error(
-                    `Der blev kun fundet ${history.length} historiske datapunkter. ` +
-                    `Mindst 30 datapunkter kræves til indikatorerne.`
-                );
-            }
+        if (history.length < 30) {
 
-            const dkNews = await fetchDanishNews(
-                name,
-                normalizedSymbol
+            throw new Error(
+                `Kun ${history.length} historiske datapunkter blev fundet.`
             );
 
-            if (currentRequestId !== analysisRequestId) {
-                return;
-            }
-
-            renderRealAnalysis(
-                normalizedSymbol,
-                name,
-                quoteData,
-                exch,
-                history,
-                dkNews
-            );
-
-            setLoading(false);
-            document
-                .getElementById("results-container")
-                .classList.remove("hidden");
-        } catch (error) {
-            console.error("Fejl ved hentning af aktiv:", error);
-
-            showError(
-                `Kunne ikke hente komplette ægte data for ` +
-                `${normalizedSymbol}. ` +
-                `${error.message || "Prøv igen senere."}`
-            );
         }
+
+        renderRealAnalysis(
+            normalizedSymbol,
+            name,
+            quoteData,
+            exch,
+            history,
+            news
+        );
+
+        setLoading(false);
+
+        document
+            .getElementById(
+                "results-container"
+            )
+            .classList.remove("hidden");
+
+    } catch (error) {
+
+        console.error(
+            "Analysefejl:",
+            error
+        );
+
+        showError(
+            `${normalizedSymbol}: ${
+                error.message ||
+                "Kunne ikke hente data."
+            }`
+        );
+
     }
 
-    async function fetchDanishNews(name, symbol) {
-        try {
-            const query = encodeURIComponent(
-                `"${name}" OR "${symbol}" Børsen Euroinvestor`
-            );
+}
 
-            const rssUrl =
-                `https://news.google.com/rss/search?q=${query}` +
-                `&hl=da&gl=DK&ceid=DK:da`;
 
-            const response = await fetch(
-                "https://api.rss2json.com/v1/api.json?rss_url=" +
-                encodeURIComponent(rssUrl)
-            );
+/* ============================================================
+   ANALYSIS
+   ============================================================ */
 
-            if (!response.ok) {
-                throw new Error("Nyhedsfeed kunne ikke hentes.");
-            }
+function renderRealAnalysis(
+    symbol,
+    name,
+    quoteData,
+    exch,
+    history,
+    news
+) {
 
-            const data = await response.json();
+    const currentPrice =
+        Number(
+            quoteData.price
+        );
 
-            if (
-                Array.isArray(data.items) &&
-                data.items.length > 0
-            ) {
-                return data.items
-                    .filter(item => item && item.title && item.link)
-                    .map(item => ({
-                        title: item.title,
-                        source:
-                            item.author ||
-                            "Danske finansmedier",
-                        url: item.link,
-                        time: formatNewsDate(item.pubDate)
-                    }));
-            }
-        } catch (error) {
-            console.warn("Nyhedsfeed-fejl:", error);
-        }
+    const currency =
+        quoteData.currency ||
+        "USD";
 
-        return [];
-    }
+    const dayChangePct =
+        Number(
+            quoteData.day_change
+        );
 
-    function formatNewsDate(dateValue) {
-        if (!dateValue) {
-            return "Ukendt dato";
-        }
+    const closes =
+        history.map(
+            row => row.close
+        );
 
-        const date = new Date(dateValue);
+    const rsi =
+        calculateRSI(
+            closes,
+            14
+        );
 
-        if (Number.isNaN(date.getTime())) {
-            return "Ukendt dato";
-        }
+    const macd =
+        calculateMACD(
+            closes,
+            12,
+            26,
+            9
+        );
 
-        return date.toLocaleDateString("da-DK", {
-            day: "numeric",
-            month: "short"
-        });
-    }
+    const sma50 =
+        calculateSMA(
+            closes,
+            50
+        );
 
-    function renderRealAnalysis(
-        symbol,
-        name,
-        quoteData,
-        exch,
-        history,
-        news
-    ) {
-        if (!quoteData || !isValidQuote(quoteData)) {
-            showError(`Der findes ingen gyldig quote for ${symbol}.`);
-            return;
-        }
+    const sma200 =
+        calculateSMA(
+            closes,
+            200
+        );
 
-        if (!Array.isArray(history) || history.length < 30) {
-            showError(
-                `Der findes ikke nok historiske datapunkter for ${symbol}.`
-            );
-            return;
-        }
-
-        const currentPrice = Number(quoteData.price);
-        const currency =
-            quoteData.currency || inferCurrency(symbol);
-        const dayChangePct = Number(quoteData.day_change);
-
-        const closes = history.map(row => row.close);
-        const latestHistoricalClose = closes[closes.length - 1];
-
-        const rsi = calculateRSI(closes, 14);
-        const macd = calculateMACD(closes, 12, 26, 9);
-        const sma50 = calculateSMA(closes, 50);
-        const sma200 = calculateSMA(closes, 200);
-
-        const indicatorSignal = calculateSignal(
+    const signal =
+        calculateSignal(
             rsi,
             macd,
             sma50,
@@ -1173,257 +1926,61 @@
             currentPrice
         );
 
-        /*
-         * Dette er et internt scenarie, ikke et ægte analytikerkursmål.
-         * Det bruger den historiske trend, men bør ikke kaldes en
-         * officiel 12-måneders prognose.
-         */
-        const targetPrice = calculateInternalTarget(
+    const targetPrice =
+        calculateInternalTarget(
             currentPrice,
             sma50,
-            latestHistoricalClose
+            closes[closes.length - 1]
         );
 
-        const targetReturn =
-            ((targetPrice - currentPrice) / currentPrice) * 100;
-
-        document.getElementById("res-symbol").textContent = symbol;
-        document.getElementById("res-name").textContent =
-            quoteData.name || name || symbol;
-
-        renderPrice(
-            currentPrice,
-            currency,
-            Number.isFinite(dayChangePct)
-                ? dayChangePct
-                : null
-        );
-
-        renderTarget(
-            targetPrice,
-            targetReturn,
-            currency
-        );
-
-        renderIndicators(
-            rsi,
-            macd,
-            sma50,
-            sma200,
+    const targetReturn =
+        (
+            (
+                targetPrice -
+                currentPrice
+            ) /
             currentPrice
-        );
+        ) * 100;
 
-        renderBadge(indicatorSignal);
-        renderSummary(
-            symbol,
-            quoteData.name || name || symbol,
-            currentPrice,
-            currency,
-            rsi,
-            macd,
-            sma50,
-            sma200,
-            indicatorSignal
-        );
+    document.getElementById(
+        "res-symbol"
+    ).textContent =
+        symbol;
 
-        renderKeyFigures(quoteData, currency);
-        renderChart(history, currentPrice, targetPrice);
-        renderNews(news);
-    }
+    document.getElementById(
+        "res-name"
+    ).textContent =
+        quoteData.name ||
+        name ||
+        symbol;
 
-    function renderPrice(
+    renderPrice(
         currentPrice,
         currency,
         dayChangePct
-    ) {
-        const priceElement = document.getElementById("res-price");
+    );
 
-        priceElement.textContent = "";
-
-        priceElement.appendChild(
-            document.createTextNode(
-                `${formatNumber(currentPrice)} ${currency} `
-            )
-        );
-
-        if (dayChangePct === null) {
-            const unavailable = document.createElement("span");
-
-            unavailable.className =
-                "text-zinc-500 text-xs font-semibold";
-
-            unavailable.textContent =
-                "ændring ikke tilgængelig";
-
-            priceElement.appendChild(unavailable);
-            return;
-        }
-
-        const change = document.createElement("span");
-
-        change.className =
-            `${dayChangePct >= 0 ? "text-emerald-400" : "text-rose-400"} ` +
-            "text-xs font-semibold ml-1";
-
-        change.textContent =
-            `${dayChangePct >= 0 ? "+" : ""}` +
-            `${formatNumber(dayChangePct)}%`;
-
-        priceElement.appendChild(change);
-    }
-
-    function renderTarget(
+    renderTarget(
         targetPrice,
         targetReturn,
         currency
-    ) {
-        document.getElementById("val-target-price").textContent =
-            `${formatNumber(targetPrice)} ${currency}`;
+    );
 
-        document.getElementById("val-target-return").textContent =
-            `${targetReturn >= 0 ? "+" : ""}` +
-            `${formatNumber(targetReturn)}%`;
-    }
-
-    function renderIndicators(
+    renderIndicators(
         rsi,
         macd,
         sma50,
         sma200,
         currentPrice
-    ) {
-        const rsiElement =
-            document.getElementById("ind-rsi-val");
+    );
 
-        const rsiSignal =
-            document.getElementById("ind-rsi-signal");
+    renderBadge(signal);
 
-        rsiElement.textContent = formatNumber(rsi, 1);
-
-        if (rsi >= 70) {
-            setIndicatorStyle(rsiSignal, "Overkøbt", "bearish");
-        } else if (rsi <= 30) {
-            setIndicatorStyle(rsiSignal, "Oversolgt", "bullish");
-        } else {
-            setIndicatorStyle(rsiSignal, "Neutral", "neutral");
-        }
-
-        const macdElement =
-            document.getElementById("ind-macd-val");
-
-        const macdSignal =
-            document.getElementById("ind-macd-signal");
-
-        macdElement.textContent =
-            `${formatNumber(macd.value, 3)}`;
-
-        if (macd.histogram > 0) {
-            setIndicatorStyle(macdSignal, "Bullish", "bullish");
-        } else {
-            setIndicatorStyle(macdSignal, "Bearish", "bearish");
-        }
-
-        const smaElement =
-            document.getElementById("ind-sma-val");
-
-        const smaSignal =
-            document.getElementById("ind-sma-signal");
-
-        const sma50Text =
-            Number.isFinite(sma50)
-                ? formatNumber(sma50)
-                : "N/A";
-
-        const sma200Text =
-            Number.isFinite(sma200)
-                ? formatNumber(sma200)
-                : "N/A";
-
-        smaElement.textContent =
-            `${sma50Text} / ${sma200Text}`;
-
-        if (
-            Number.isFinite(sma50) &&
-            Number.isFinite(sma200) &&
-            currentPrice > sma50 &&
-            currentPrice > sma200
-        ) {
-            setIndicatorStyle(
-                smaSignal,
-                "Over SMA",
-                "bullish"
-            );
-        } else if (
-            Number.isFinite(sma50) &&
-            Number.isFinite(sma200) &&
-            currentPrice < sma50 &&
-            currentPrice < sma200
-        ) {
-            setIndicatorStyle(
-                smaSignal,
-                "Under SMA",
-                "bearish"
-            );
-        } else {
-            setIndicatorStyle(
-                smaSignal,
-                "Blandet",
-                "neutral"
-            );
-        }
-    }
-
-    function setIndicatorStyle(
-        element,
-        text,
-        type
-    ) {
-        const base =
-            "text-[9px] font-bold uppercase px-1.5 py-0.5 rounded mt-1 inline-block";
-
-        const styles = {
-            bullish:
-                " bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
-
-            bearish:
-                " bg-rose-500/20 text-rose-400 border border-rose-500/30",
-
-            neutral:
-                " bg-amber-500/20 text-amber-400 border border-amber-500/30"
-        };
-
-        element.textContent = text;
-        element.className =
-            base + (styles[type] || styles.neutral);
-    }
-
-    function renderBadge(signal) {
-        const badge = document.getElementById("res-badge");
-
-        if (signal === "KØB") {
-            badge.textContent = "KØB";
-            badge.className =
-                "px-3.5 py-1.5 rounded-xl border font-black text-xs " +
-                "tracking-wide uppercase shrink-0 bg-emerald-500/10 " +
-                "border-emerald-500/40 text-emerald-400";
-        } else if (signal === "SÆLG") {
-            badge.textContent = "SÆLG";
-            badge.className =
-                "px-3.5 py-1.5 rounded-xl border font-black text-xs " +
-                "tracking-wide uppercase shrink-0 bg-rose-500/10 " +
-                "border-rose-500/40 text-rose-400";
-        } else {
-            badge.textContent = "HOLD";
-            badge.className =
-                "px-3.5 py-1.5 rounded-xl border font-black text-xs " +
-                "tracking-wide uppercase shrink-0 bg-amber-500/10 " +
-                "border-amber-500/40 text-amber-400";
-        }
-    }
-
-    function renderSummary(
+    renderSummary(
         symbol,
-        name,
+        quoteData.name ||
+        name ||
+        symbol,
         currentPrice,
         currency,
         rsi,
@@ -1431,566 +1988,1415 @@
         sma50,
         sma200,
         signal
-    ) {
-        const summary =
-            `${name} (${symbol}) handles til ` +
-            `${formatNumber(currentPrice)} ${currency}. ` +
-            `RSI 14 er ${formatNumber(rsi, 1)}, ` +
-            `MACD-histogrammet er ${formatNumber(macd.histogram, 3)}, ` +
-            `og SMA50/SMA200 er ` +
-            `${formatNumber(sma50)} / ${formatNumber(sma200)}. ` +
-            `Det tekniske samlede signal er ${signal}.`;
+    );
 
-        document.getElementById("res-summary").textContent = summary;
-    }
+    renderKeyFigures(
+        quoteData,
+        currency
+    );
 
-    function renderKeyFigures(data, currency) {
-        const dayLow = Number(data.day_low);
-        const dayHigh = Number(data.day_high);
-        const high52 = Number(data["52_week_high"]);
-
-        document.getElementById("val-day-range").textContent =
-            Number.isFinite(dayLow) &&
-            Number.isFinite(dayHigh)
-                ? `${formatNumber(dayLow)} / ` +
-                  `${formatNumber(dayHigh)} ${currency}`
-                : "Ikke tilgængelig";
-
-        document.getElementById("val-52high").textContent =
-            Number.isFinite(high52)
-                ? `${formatNumber(high52)} ${currency}`
-                : "Ikke tilgængelig";
-    }
-
-    function renderChart(
+    renderChart(
         history,
-        currentPrice,
-        targetPrice
-    ) {
-        const canvas = document.getElementById("priceChart");
+        currentPrice
+    );
 
-        if (!canvas) {
-            return;
-        }
+    renderNews(news);
 
-        const context = canvas.getContext("2d");
+}
 
-        if (priceChartInstance) {
-            priceChartInstance.destroy();
-            priceChartInstance = null;
-        }
 
-        const validHistory = history.filter(row => {
-            return (
-                row &&
-                row.date &&
-                Number.isFinite(row.close) &&
-                row.close > 0
-            );
-        });
+/* ============================================================
+   PRICE
+   ============================================================ */
 
-        const labels = validHistory.map(row =>
-            formatDateLabel(row.date)
+function renderPrice(
+    currentPrice,
+    currency,
+    dayChangePct
+) {
+
+    const element =
+        document.getElementById(
+            "res-price"
         );
 
-        const values = validHistory.map(row => row.close);
+    element.textContent =
+        `${formatNumber(
+            currentPrice
+        )} ${currency}`;
 
-        labels.push("Aktuel");
-        values.push(currentPrice);
+    if (
+        Number.isFinite(
+            dayChangePct
+        )
+    ) {
 
-        labels.push("Internt mål");
-        values.push(targetPrice);
+        const change =
+            document.createElement("span");
 
-        priceChartInstance = new Chart(context, {
-            type: "line",
+        change.className =
+            `ml-2 ${
+                dayChangePct >= 0
+                    ? "text-emerald-400"
+                    : "text-rose-400"
+            }`;
 
-            data: {
-                labels,
+        change.textContent =
+            `${dayChangePct >= 0 ? "+" : ""}` +
+            `${formatNumber(
+                dayChangePct
+            )}%`;
 
-                datasets: [{
-                    label: "Daglig lukkekurs",
-                    data: values,
-                    borderColor: "#10b981",
-                    backgroundColor: "rgba(16, 185, 129, 0.08)",
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    pointHoverRadius: 4,
-                    fill: true,
-                    tension: 0.15
-                }]
-            },
+        element.appendChild(
+            change
+        );
 
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
+    }
 
-                plugins: {
-                    legend: {
-                        display: false
-                    },
+}
 
-                    tooltip: {
-                        callbacks: {
-                            label: tooltipContext => {
-                                return formatNumber(
-                                    tooltipContext.raw
-                                );
-                            }
-                        }
-                    }
+
+/* ============================================================
+   TARGET
+   ============================================================ */
+
+function renderTarget(
+    targetPrice,
+    targetReturn,
+    currency
+) {
+
+    document.getElementById(
+        "val-target-price"
+    ).textContent =
+        `${formatNumber(
+            targetPrice
+        )} ${currency}`;
+
+    const returnElement =
+        document.getElementById(
+            "val-target-return"
+        );
+
+    returnElement.textContent =
+        `${targetReturn >= 0 ? "+" : ""}` +
+        `${formatNumber(
+            targetReturn
+        )}%`;
+
+    returnElement.className =
+        `text-xs font-bold ${
+            targetReturn >= 0
+                ? "text-emerald-400"
+                : "text-rose-400"
+        }`;
+
+}
+
+
+/* ============================================================
+   INDICATORS
+   ============================================================ */
+
+function renderIndicators(
+    rsi,
+    macd,
+    sma50,
+    sma200,
+    currentPrice
+) {
+
+    const rsiElement =
+        document.getElementById(
+            "ind-rsi-val"
+        );
+
+    const rsiSignal =
+        document.getElementById(
+            "ind-rsi-signal"
+        );
+
+    rsiElement.textContent =
+        Number.isFinite(rsi)
+            ? formatNumber(rsi, 1)
+            : "N/A";
+
+    if (rsi >= 70) {
+
+        setIndicatorStyle(
+            rsiSignal,
+            "Overkøbt",
+            "bearish"
+        );
+
+    } else if (rsi <= 30) {
+
+        setIndicatorStyle(
+            rsiSignal,
+            "Oversolgt",
+            "bullish"
+        );
+
+    } else {
+
+        setIndicatorStyle(
+            rsiSignal,
+            "Neutral",
+            "neutral"
+        );
+
+    }
+
+
+    const macdElement =
+        document.getElementById(
+            "ind-macd-val"
+        );
+
+    const macdSignal =
+        document.getElementById(
+            "ind-macd-signal"
+        );
+
+    macdElement.textContent =
+        Number.isFinite(
+            macd.value
+        )
+            ? formatNumber(
+                macd.value,
+                3
+            )
+            : "N/A";
+
+    if (
+        Number.isFinite(
+            macd.histogram
+        ) &&
+        macd.histogram > 0
+    ) {
+
+        setIndicatorStyle(
+            macdSignal,
+            "Bullish",
+            "bullish"
+        );
+
+    } else {
+
+        setIndicatorStyle(
+            macdSignal,
+            "Bearish",
+            "bearish"
+        );
+
+    }
+
+
+    const smaElement =
+        document.getElementById(
+            "ind-sma-val"
+        );
+
+    const smaSignal =
+        document.getElementById(
+            "ind-sma-signal"
+        );
+
+    smaElement.textContent =
+        `${Number.isFinite(sma50)
+            ? formatNumber(sma50)
+            : "N/A"} / ${
+            Number.isFinite(sma200)
+            ? formatNumber(sma200)
+            : "N/A"
+        }`;
+
+    if (
+        Number.isFinite(sma50) &&
+        Number.isFinite(sma200) &&
+        currentPrice > sma50 &&
+        currentPrice > sma200
+    ) {
+
+        setIndicatorStyle(
+            smaSignal,
+            "Over SMA",
+            "bullish"
+        );
+
+    } else if (
+        Number.isFinite(sma50) &&
+        Number.isFinite(sma200) &&
+        currentPrice < sma50 &&
+        currentPrice < sma200
+    ) {
+
+        setIndicatorStyle(
+            smaSignal,
+            "Under SMA",
+            "bearish"
+        );
+
+    } else {
+
+        setIndicatorStyle(
+            smaSignal,
+            "Blandet",
+            "neutral"
+        );
+
+    }
+
+}
+
+
+function setIndicatorStyle(
+    element,
+    text,
+    type
+) {
+
+    const styles = {
+
+        bullish:
+            "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
+
+        bearish:
+            "bg-rose-500/20 text-rose-400 border border-rose-500/30",
+
+        neutral:
+            "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+
+    };
+
+    element.textContent =
+        text;
+
+    element.className =
+        "text-[9px] font-bold uppercase " +
+        "px-1.5 py-0.5 rounded mt-1 inline-block " +
+        (styles[type] || styles.neutral);
+
+}
+
+
+/* ============================================================
+   SIGNAL
+   ============================================================ */
+
+function renderBadge(signal) {
+
+    const badge =
+        document.getElementById(
+            "res-badge"
+        );
+
+    if (signal === "KØB") {
+
+        badge.textContent =
+            "KØB";
+
+        badge.className =
+            "px-3.5 py-1.5 rounded-xl border " +
+            "font-black text-xs tracking-wide " +
+            "uppercase shrink-0 bg-emerald-500/10 " +
+            "border-emerald-500/40 text-emerald-400";
+
+    } else if (
+        signal === "SÆLG"
+    ) {
+
+        badge.textContent =
+            "SÆLG";
+
+        badge.className =
+            "px-3.5 py-1.5 rounded-xl border " +
+            "font-black text-xs tracking-wide " +
+            "uppercase shrink-0 bg-rose-500/10 " +
+            "border-rose-500/40 text-rose-400";
+
+    } else {
+
+        badge.textContent =
+            "HOLD";
+
+        badge.className =
+            "px-3.5 py-1.5 rounded-xl border " +
+            "font-black text-xs tracking-wide " +
+            "uppercase shrink-0 bg-amber-500/10 " +
+            "border-amber-500/40 text-amber-400";
+
+    }
+
+}
+
+
+/* ============================================================
+   SUMMARY
+   ============================================================ */
+
+function renderSummary(
+    symbol,
+    name,
+    currentPrice,
+    currency,
+    rsi,
+    macd,
+    sma50,
+    sma200,
+    signal
+) {
+
+    const summary =
+        `${name} (${symbol}) handles til ` +
+        `${formatNumber(
+            currentPrice
+        )} ${currency}. ` +
+        `RSI 14 er ${
+            Number.isFinite(rsi)
+                ? formatNumber(rsi, 1)
+                : "N/A"
+        }, ` +
+        `MACD-histogrammet er ${
+            Number.isFinite(
+                macd.histogram
+            )
+                ? formatNumber(
+                    macd.histogram,
+                    3
+                )
+                : "N/A"
+        }, ` +
+        `og SMA50/SMA200 er ` +
+        `${
+            Number.isFinite(sma50)
+                ? formatNumber(sma50)
+                : "N/A"
+        } / ` +
+        `${
+            Number.isFinite(sma200)
+                ? formatNumber(sma200)
+                : "N/A"
+        }. ` +
+        `Det samlede tekniske signal er ${signal}.`;
+
+    document.getElementById(
+        "res-summary"
+    ).textContent =
+        summary;
+
+}
+
+
+/* ============================================================
+   KEY FIGURES
+   ============================================================ */
+
+function renderKeyFigures(
+    data,
+    currency
+) {
+
+    const dayLow =
+        Number(
+            data.day_low
+        );
+
+    const dayHigh =
+        Number(
+            data.day_high
+        );
+
+    const high52 =
+        Number(
+            data["52_week_high"]
+        );
+
+    document.getElementById(
+        "val-day-range"
+    ).textContent =
+        Number.isFinite(dayLow) &&
+        Number.isFinite(dayHigh)
+            ? `${formatNumber(
+                dayLow
+            )} / ${formatNumber(
+                dayHigh
+            )} ${currency}`
+            : "N/A";
+
+    document.getElementById(
+        "val-52high"
+    ).textContent =
+        Number.isFinite(high52)
+            ? `${formatNumber(
+                high52
+            )} ${currency}`
+            : "N/A";
+
+}
+
+
+/* ============================================================
+   CHART
+   ============================================================ */
+
+function renderChart(
+    history,
+    currentPrice
+) {
+
+    const canvas =
+        document.getElementById(
+            "priceChart"
+        );
+
+    if (!canvas) {
+        return;
+    }
+
+    if (priceChartInstance) {
+
+        priceChartInstance.destroy();
+
+        priceChartInstance = null;
+
+    }
+
+    const context =
+        canvas.getContext("2d");
+
+    const validHistory =
+        history.filter(row =>
+            row &&
+            row.date &&
+            Number.isFinite(
+                row.close
+            ) &&
+            row.close > 0
+        );
+
+    const labels =
+        validHistory.map(row =>
+            formatDateLabel(
+                row.date
+            )
+        );
+
+    const values =
+        validHistory.map(
+            row => row.close
+        );
+
+    labels.push("Aktuel");
+
+    values.push(
+        currentPrice
+    );
+
+    priceChartInstance =
+        new Chart(
+            context,
+            {
+
+                type: "line",
+
+                data: {
+
+                    labels,
+
+                    datasets: [{
+
+                        label:
+                            "Daglig lukkekurs",
+
+                        data:
+                            values,
+
+                        borderColor:
+                            "#10b981",
+
+                        backgroundColor:
+                            "rgba(16,185,129,0.08)",
+
+                        borderWidth:
+                            2,
+
+                        pointRadius:
+                            0,
+
+                        pointHoverRadius:
+                            4,
+
+                        fill:
+                            true,
+
+                        tension:
+                            0.15
+
+                    }]
+
                 },
 
-                scales: {
-                    x: {
-                        grid: {
+                options: {
+
+                    responsive:
+                        true,
+
+                    maintainAspectRatio:
+                        false,
+
+                    plugins: {
+
+                        legend: {
                             display: false
                         },
 
-                        ticks: {
-                            color: "#a1a1aa",
-                            font: {
-                                size: 9
-                            },
+                        tooltip: {
 
-                            maxTicksLimit: 8
+                            callbacks: {
+
+                                label:
+                                    context =>
+                                        formatNumber(
+                                            context.raw
+                                        )
+
+                            }
+
                         }
+
                     },
 
-                    y: {
-                        grid: {
-                            color: "rgba(63, 63, 70, 0.3)"
+                    scales: {
+
+                        x: {
+
+                            grid: {
+                                display: false
+                            },
+
+                            ticks: {
+
+                                color:
+                                    "#a1a1aa",
+
+                                font: {
+                                    size: 9
+                                },
+
+                                maxTicksLimit:
+                                    8
+
+                            }
+
                         },
 
-                        ticks: {
-                            color: "#a1a1aa",
-                            font: {
-                                size: 9
+                        y: {
+
+                            grid: {
+
+                                color:
+                                    "rgba(63,63,70,0.3)"
+
+                            },
+
+                            ticks: {
+
+                                color:
+                                    "#a1a1aa",
+
+                                font: {
+                                    size: 9
+                                }
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
-        });
+        );
+
+}
+
+
+/* ============================================================
+   NEWS
+   ============================================================ */
+
+function renderNews(news) {
+
+    const list =
+        document.getElementById(
+            "news-list"
+        );
+
+    const more =
+        document.getElementById(
+            "more-news-container"
+        );
+
+    const button =
+        document.getElementById(
+            "toggle-news-btn"
+        );
+
+    list.innerHTML = "";
+
+    more.innerHTML = "";
+
+    more.classList.add(
+        "hidden"
+    );
+
+    if (
+        !Array.isArray(news) ||
+        news.length === 0
+    ) {
+
+        list.innerHTML = `
+
+            <div class="glass-card p-4 rounded-xl text-xs text-zinc-500">
+                Ingen relevante nyheder kunne hentes.
+            </div>
+
+        `;
+
+        button.classList.add(
+            "hidden"
+        );
+
+        return;
+
     }
 
-    function renderNews(news) {
-        const newsList = document.getElementById("news-list");
-        const moreNewsContainer =
-            document.getElementById("more-news-container");
+    button.classList.remove(
+        "hidden"
+    );
 
-        const toggleButton =
-            document.getElementById("toggle-news-btn");
-
-        newsList.innerHTML = "";
-        moreNewsContainer.innerHTML = "";
-        moreNewsContainer.classList.add("hidden");
-
-        if (!Array.isArray(news) || news.length === 0) {
-            newsList.innerHTML = `
-                <div class="glass-card p-4 rounded-xl text-xs text-zinc-500">
-                    Ingen nyheder kunne hentes.
-                </div>
-            `;
-
-            toggleButton.classList.add("hidden");
-            return;
-        }
-
-        toggleButton.classList.remove("hidden");
-
-        news.slice(0, 3).forEach(item => {
-            newsList.appendChild(createNewsCard(item));
-        });
-
-        news.slice(3, 8).forEach(item => {
-            moreNewsContainer.appendChild(
+    news.slice(0, 3).forEach(
+        item =>
+            list.appendChild(
                 createNewsCard(item)
-            );
-        });
+            )
+    );
 
-        document.querySelector(
-            "#toggle-news-btn span"
-        ).textContent =
-            "Læs flere danske nyheder & links";
+    news.slice(3, 8).forEach(
+        item =>
+            more.appendChild(
+                createNewsCard(item)
+            )
+    );
 
+    document.querySelector(
+        "#toggle-news-btn span"
+    ).textContent =
+        "Læs flere nyheder";
+
+    document.getElementById(
+        "news-arrow"
+    ).style.transform =
+        "rotate(0deg)";
+
+}
+
+
+function createNewsCard(
+    newsItem
+) {
+
+    const card =
+        document.createElement("a");
+
+    card.href =
+        newsItem.url;
+
+    card.target =
+        "_blank";
+
+    card.rel =
+        "noopener noreferrer";
+
+    card.className =
+        "glass-card p-3 rounded-xl flex " +
+        "justify-between items-start gap-3 " +
+        "hover:border-emerald-500/50 " +
+        "transition block";
+
+    const wrapper =
+        document.createElement("div");
+
+    wrapper.className =
+        "space-y-1";
+
+    const title =
+        document.createElement("h4");
+
+    title.className =
+        "text-xs font-semibold text-zinc-200 leading-snug";
+
+    title.textContent =
+        newsItem.title ||
+        "Nyhedsartikel";
+
+    const metadata =
+        document.createElement("p");
+
+    metadata.className =
+        "text-[10px] text-zinc-500";
+
+    metadata.textContent =
+        `${newsItem.source || "Ukendt kilde"} • ` +
+        `${newsItem.time || "Ukendt dato"}`;
+
+    wrapper.appendChild(
+        title
+    );
+
+    wrapper.appendChild(
+        metadata
+    );
+
+    card.appendChild(
+        wrapper
+    );
+
+    return card;
+
+}
+
+
+function toggleMoreNews() {
+
+    const more =
+        document.getElementById(
+            "more-news-container"
+        );
+
+    const button =
+        document.getElementById(
+            "toggle-news-btn"
+        );
+
+    const arrow =
         document.getElementById(
             "news-arrow"
-        ).style.transform = "rotate(0deg)";
-    }
+        );
 
-    function createNewsCard(newsItem) {
-        const card = document.createElement("a");
+    const text =
+        button.querySelector(
+            "span"
+        );
 
-        card.href = newsItem.url;
-        card.target = "_blank";
-        card.rel = "noopener noreferrer";
-
-        card.className =
-            "glass-card p-3 rounded-xl flex justify-between " +
-            "items-start gap-3 hover:border-emerald-500/50 " +
-            "transition block";
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "space-y-1";
-
-        const titleRow = document.createElement("div");
-        titleRow.className = "flex items-center gap-2";
-
-        const dot = document.createElement("span");
-        dot.className =
-            "w-2 h-2 rounded-full bg-emerald-400 shrink-0";
-
-        const title = document.createElement("h4");
-        title.className =
-            "text-xs font-semibold text-zinc-200 leading-snug";
-
-        title.textContent =
-            newsItem.title || "Nyhedsartikel";
-
-        titleRow.appendChild(dot);
-        titleRow.appendChild(title);
-
-        const metadata = document.createElement("p");
-        metadata.className =
-            "text-[10px] text-zinc-500 pl-4";
-
-        metadata.textContent =
-            `${newsItem.source || "Ukendt kilde"} • ` +
-            `${newsItem.time || "Ukendt dato"} `;
-
-        const sourceLink = document.createElement("span");
-        sourceLink.className =
-            "text-emerald-400 underline ml-1";
-
-        sourceLink.textContent = "Læs kilde ↗";
-
-        metadata.appendChild(sourceLink);
-
-        wrapper.appendChild(titleRow);
-        wrapper.appendChild(metadata);
-        card.appendChild(wrapper);
-
-        return card;
-    }
-
-    function toggleMoreNews() {
-        const moreContainer =
-            document.getElementById("more-news-container");
-
-        const button =
-            document.getElementById("toggle-news-btn");
-
-        const arrow =
-            document.getElementById("news-arrow");
-
-        const buttonText = button.querySelector("span");
-
-        if (moreContainer.classList.contains("hidden")) {
-            moreContainer.classList.remove("hidden");
-            buttonText.textContent = "Skjul ekstra nyheder";
-            arrow.style.transform = "rotate(180deg)";
-        } else {
-            moreContainer.classList.add("hidden");
-            buttonText.textContent =
-                "Læs flere danske nyheder & links";
-            arrow.style.transform = "rotate(0deg)";
-        }
-    }
-
-    /*
-     * Beregner Simple Moving Average.
-     */
-    function calculateSMA(values, period) {
-        if (!Array.isArray(values) || values.length < period) {
-            return null;
-        }
-
-        const slice = values.slice(-period);
-        const sum = slice.reduce((total, value) => {
-            return total + Number(value);
-        }, 0);
-
-        const result = sum / period;
-
-        return Number.isFinite(result) ? result : null;
-    }
-
-    /*
-     * Beregner EMA med standardformlen:
-     * EMA_today = price * multiplier + EMA_yesterday * (1 - multiplier)
-     */
-    function calculateEMA(values, period) {
-        if (!Array.isArray(values) || values.length < period) {
-            return [];
-        }
-
-        const numericValues = values.map(Number);
-        const multiplier = 2 / (period + 1);
-
-        let ema = numericValues
-            .slice(0, period)
-            .reduce((sum, value) => sum + value, 0) / period;
-
-        const result = [];
-
-        for (let index = period - 1; index < numericValues.length; index++) {
-            if (index === period - 1) {
-                result.push(ema);
-                continue;
-            }
-
-            ema =
-                (numericValues[index] - ema) * multiplier + ema;
-
-            result.push(ema);
-        }
-
-        return result;
-    }
-
-    /*
-     * Beregner RSI med Wilder's smoothing.
-     */
-    function calculateRSI(values, period = 14) {
-        if (!Array.isArray(values) || values.length <= period) {
-            return null;
-        }
-
-        const numericValues = values.map(Number);
-        let gainSum = 0;
-        let lossSum = 0;
-
-        for (let index = 1; index <= period; index++) {
-            const change =
-                numericValues[index] - numericValues[index - 1];
-
-            if (change >= 0) {
-                gainSum += change;
-            } else {
-                lossSum += Math.abs(change);
-            }
-        }
-
-        let averageGain = gainSum / period;
-        let averageLoss = lossSum / period;
-
-        for (
-            let index = period + 1;
-            index < numericValues.length;
-            index++
-        ) {
-            const change =
-                numericValues[index] - numericValues[index - 1];
-
-            const gain = change > 0 ? change : 0;
-            const loss = change < 0 ? Math.abs(change) : 0;
-
-            averageGain =
-                ((averageGain * (period - 1)) + gain) / period;
-
-            averageLoss =
-                ((averageLoss * (period - 1)) + loss) / period;
-        }
-
-        if (averageLoss === 0) {
-            return 100;
-        }
-
-        const relativeStrength =
-            averageGain / averageLoss;
-
-        const rsi =
-            100 - (100 / (1 + relativeStrength));
-
-        return Number.isFinite(rsi) ? rsi : null;
-    }
-
-    /*
-     * Beregner MACD:
-     * Fast EMA: 12
-     * Langsom EMA: 26
-     * Signallinje: EMA 9 af MACD-serien
-     */
-    function calculateMACD(
-        values,
-        fastPeriod = 12,
-        slowPeriod = 26,
-        signalPeriod = 9
+    if (
+        more.classList.contains(
+            "hidden"
+        )
     ) {
-        if (!Array.isArray(values) || values.length < slowPeriod) {
-            return {
-                value: null,
-                signal: null,
-                histogram: null
-            };
+
+        more.classList.remove(
+            "hidden"
+        );
+
+        text.textContent =
+            "Skjul ekstra nyheder";
+
+        arrow.style.transform =
+            "rotate(180deg)";
+
+    } else {
+
+        more.classList.add(
+            "hidden"
+        );
+
+        text.textContent =
+            "Læs flere nyheder";
+
+        arrow.style.transform =
+            "rotate(0deg)";
+
+    }
+
+}
+
+
+/* ============================================================
+   DATE
+   ============================================================ */
+
+function formatNewsDate(
+    value
+) {
+
+    if (!value) {
+        return "Ukendt dato";
+    }
+
+    const date =
+        new Date(value);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return "Ukendt dato";
+    }
+
+    return date.toLocaleDateString(
+        "da-DK",
+        {
+            day: "numeric",
+            month: "short"
         }
+    );
 
-        const fastEma = calculateEMA(values, fastPeriod);
-        const slowEma = calculateEMA(values, slowPeriod);
+}
 
-        const macdValues = [];
-        const slowStartIndex = slowPeriod - 1;
 
-        for (
-            let index = 0;
-            index < slowEma.length;
-            index++
+/* ============================================================
+   SMA
+   ============================================================ */
+
+function calculateSMA(
+    values,
+    period
+) {
+
+    if (
+        !Array.isArray(values) ||
+        values.length < period
+    ) {
+        return null;
+    }
+
+    const slice =
+        values.slice(
+            -period
+        );
+
+    const sum =
+        slice.reduce(
+            (total, value) =>
+                total + Number(value),
+            0
+        );
+
+    const result =
+        sum / period;
+
+    return Number.isFinite(
+        result
+    )
+        ? result
+        : null;
+
+}
+
+
+/* ============================================================
+   EMA
+   ============================================================ */
+
+function calculateEMA(
+    values,
+    period
+) {
+
+    if (
+        !Array.isArray(values) ||
+        values.length < period
+    ) {
+        return [];
+    }
+
+    const numericValues =
+        values.map(Number);
+
+    const multiplier =
+        2 / (
+            period + 1
+        );
+
+    let ema =
+        numericValues
+            .slice(0, period)
+            .reduce(
+                (sum, value) =>
+                    sum + value,
+                0
+            ) / period;
+
+    const result = [];
+
+    for (
+        let index = period - 1;
+        index < numericValues.length;
+        index++
+    ) {
+
+        if (
+            index ===
+            period - 1
         ) {
-            const originalIndex = slowStartIndex + index;
-            const fastIndex = originalIndex - (fastPeriod - 1);
 
-            const fastValue = fastEma[fastIndex];
-            const slowValue = slowEma[index];
+            result.push(
+                ema
+            );
 
-            if (
-                Number.isFinite(fastValue) &&
-                Number.isFinite(slowValue)
-            ) {
-                macdValues.push(fastValue - slowValue);
-            }
+            continue;
+
         }
 
-        if (macdValues.length === 0) {
-            return {
-                value: null,
-                signal: null,
-                histogram: null
-            };
+        ema =
+            (
+                numericValues[index] -
+                ema
+            ) *
+            multiplier +
+            ema;
+
+        result.push(
+            ema
+        );
+
+    }
+
+    return result;
+
+}
+
+
+/* ============================================================
+   RSI
+   ============================================================ */
+
+function calculateRSI(
+    values,
+    period = 14
+) {
+
+    if (
+        !Array.isArray(values) ||
+        values.length <= period
+    ) {
+        return null;
+    }
+
+    const numericValues =
+        values.map(Number);
+
+    let gainSum = 0;
+
+    let lossSum = 0;
+
+    for (
+        let index = 1;
+        index <= period;
+        index++
+    ) {
+
+        const change =
+            numericValues[index] -
+            numericValues[index - 1];
+
+        if (
+            change >= 0
+        ) {
+
+            gainSum += change;
+
+        } else {
+
+            lossSum +=
+                Math.abs(change);
+
         }
 
-        const signalValues = calculateEMA(
+    }
+
+    let averageGain =
+        gainSum / period;
+
+    let averageLoss =
+        lossSum / period;
+
+    for (
+        let index = period + 1;
+        index < numericValues.length;
+        index++
+    ) {
+
+        const change =
+            numericValues[index] -
+            numericValues[index - 1];
+
+        const gain =
+            change > 0
+                ? change
+                : 0;
+
+        const loss =
+            change < 0
+                ? Math.abs(change)
+                : 0;
+
+        averageGain =
+            (
+                averageGain *
+                (period - 1) +
+                gain
+            ) / period;
+
+        averageLoss =
+            (
+                averageLoss *
+                (period - 1) +
+                loss
+            ) / period;
+
+    }
+
+    if (
+        averageLoss === 0
+    ) {
+        return 100;
+    }
+
+    const rs =
+        averageGain /
+        averageLoss;
+
+    const rsi =
+        100 -
+        (
+            100 /
+            (1 + rs)
+        );
+
+    return Number.isFinite(rsi)
+        ? rsi
+        : null;
+
+}
+
+
+/* ============================================================
+   MACD
+   ============================================================ */
+
+function calculateMACD(
+    values,
+    fastPeriod = 12,
+    slowPeriod = 26,
+    signalPeriod = 9
+) {
+
+    if (
+        !Array.isArray(values) ||
+        values.length < slowPeriod
+    ) {
+
+        return {
+            value: null,
+            signal: null,
+            histogram: null
+        };
+
+    }
+
+    const fastEma =
+        calculateEMA(
+            values,
+            fastPeriod
+        );
+
+    const slowEma =
+        calculateEMA(
+            values,
+            slowPeriod
+        );
+
+    const macdValues = [];
+
+    const slowStart =
+        slowPeriod - 1;
+
+    for (
+        let index = 0;
+        index < slowEma.length;
+        index++
+    ) {
+
+        const originalIndex =
+            slowStart +
+            index;
+
+        const fastIndex =
+            originalIndex -
+            (
+                fastPeriod - 1
+            );
+
+        const fastValue =
+            fastEma[fastIndex];
+
+        const slowValue =
+            slowEma[index];
+
+        if (
+            Number.isFinite(
+                fastValue
+            ) &&
+            Number.isFinite(
+                slowValue
+            )
+        ) {
+
+            macdValues.push(
+                fastValue -
+                slowValue
+            );
+
+        }
+
+    }
+
+    if (
+        macdValues.length === 0
+    ) {
+
+        return {
+            value: null,
+            signal: null,
+            histogram: null
+        };
+
+    }
+
+    const signalValues =
+        calculateEMA(
             macdValues,
             signalPeriod
         );
 
-        const value = macdValues[macdValues.length - 1];
-        const signal =
-            signalValues.length > 0
-                ? signalValues[signalValues.length - 1]
-                : null;
+    const value =
+        macdValues[
+            macdValues.length - 1
+        ];
 
-        const histogram =
+    const signal =
+        signalValues.length
+            ? signalValues[
+                signalValues.length - 1
+            ]
+            : null;
+
+    return {
+
+        value,
+
+        signal,
+
+        histogram:
             signal === null
                 ? null
-                : value - signal;
+                : value - signal
 
-        return {
-            value,
-            signal,
-            histogram
-        };
+    };
+
+}
+
+
+/* ============================================================
+   TECHNICAL SIGNAL
+   ============================================================ */
+
+function calculateSignal(
+    rsi,
+    macd,
+    sma50,
+    sma200,
+    currentPrice
+) {
+
+    let bullish = 0;
+
+    let bearish = 0;
+
+
+    if (
+        Number.isFinite(rsi)
+    ) {
+
+        if (rsi < 30) {
+            bullish++;
+        }
+
+        if (rsi > 70) {
+            bearish++;
+        }
+
     }
 
-    function calculateSignal(
-        rsi,
-        macd,
-        sma50,
-        sma200,
-        currentPrice
+
+    if (
+        Number.isFinite(
+            macd.histogram
+        )
     ) {
-        let bullishPoints = 0;
-        let bearishPoints = 0;
 
-        if (Number.isFinite(rsi)) {
-            if (rsi < 30) {
-                bullishPoints++;
-            }
-
-            if (rsi > 70) {
-                bearishPoints++;
-            }
-        }
-
-        if (Number.isFinite(macd.histogram)) {
-            if (macd.histogram > 0) {
-                bullishPoints++;
-            } else if (macd.histogram < 0) {
-                bearishPoints++;
-            }
+        if (
+            macd.histogram > 0
+        ) {
+            bullish++;
         }
 
         if (
-            Number.isFinite(sma50) &&
-            Number.isFinite(sma200) &&
-            Number.isFinite(currentPrice)
+            macd.histogram < 0
         ) {
-            if (
-                currentPrice > sma50 &&
-                currentPrice > sma200
-            ) {
-                bullishPoints++;
-            }
-
-            if (
-                currentPrice < sma50 &&
-                currentPrice < sma200
-            ) {
-                bearishPoints++;
-            }
+            bearish++;
         }
 
-        if (
-            bullishPoints >= 2 &&
-            bullishPoints > bearishPoints
-        ) {
-            return "KØB";
-        }
-
-        if (
-            bearishPoints >= 2 &&
-            bearishPoints > bullishPoints
-        ) {
-            return "SÆLG";
-        }
-
-        return "HOLD";
     }
 
-    function calculateInternalTarget(
-        currentPrice,
-        sma50,
-        latestHistoricalClose
+
+    if (
+        Number.isFinite(sma50) &&
+        Number.isFinite(sma200)
     ) {
-        const validSma =
-            Number.isFinite(sma50) ? sma50 : currentPrice;
 
-        const validLatestClose =
-            Number.isFinite(latestHistoricalClose)
-                ? latestHistoricalClose
-                : currentPrice;
+        if (
+            currentPrice > sma50 &&
+            currentPrice > sma200
+        ) {
+            bullish++;
+        }
 
-        const trendAverage =
-            (validSma + validLatestClose) / 2;
+        if (
+            currentPrice < sma50 &&
+            currentPrice < sma200
+        ) {
+            bearish++;
+        }
 
-        const target =
-            currentPrice + (trendAverage - currentPrice) * 0.5;
+    }
 
-        return Number.isFinite(target)
-            ? target
+
+    if (
+        bullish >= 2 &&
+        bullish > bearish
+    ) {
+        return "KØB";
+    }
+
+
+    if (
+        bearish >= 2 &&
+        bearish > bullish
+    ) {
+        return "SÆLG";
+    }
+
+
+    return "HOLD";
+
+}
+
+
+/* ============================================================
+   INTERNAL TREND TARGET
+   ============================================================ */
+
+function calculateInternalTarget(
+    currentPrice,
+    sma50,
+    latestHistoricalClose
+) {
+
+    const validSma =
+        Number.isFinite(sma50)
+            ? sma50
             : currentPrice;
-    }
 
-    document.addEventListener("click", event => {
+    const latest =
+        Number.isFinite(
+            latestHistoricalClose
+        )
+            ? latestHistoricalClose
+            : currentPrice;
+
+    const trendAverage =
+        (
+            validSma +
+            latest
+        ) / 2;
+
+    const target =
+        currentPrice +
+        (
+            trendAverage -
+            currentPrice
+        ) * 0.5;
+
+    return Number.isFinite(
+        target
+    )
+        ? target
+        : currentPrice;
+
+}
+
+
+/* ============================================================
+   OUTSIDE CLICK
+   ============================================================ */
+
+document.addEventListener(
+    "click",
+    event => {
+
         const dropdown =
-            document.getElementById("autocomplete-results");
+            document.getElementById(
+                "autocomplete-results"
+            );
 
         const input =
-            document.getElementById("asset-input");
+            document.getElementById(
+                "asset-input"
+            );
 
         const clearButton =
-            document.getElementById("clear-btn");
+            document.getElementById(
+                "clear-btn"
+            );
 
         if (
             dropdown &&
-            !dropdown.contains(event.target) &&
+            !dropdown.contains(
+                event.target
+            ) &&
             event.target !== input &&
             event.target !== clearButton
         ) {
-            dropdown.classList.add("hidden");
+
+            dropdown.classList.add(
+                "hidden"
+            );
+
             dropdown.innerHTML = "";
+
             selectedDropdownIndex = -1;
+
         }
-    });
+
+    }
+);
+
 </script>
 
 </body>
